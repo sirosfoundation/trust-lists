@@ -176,19 +176,17 @@ jobs:
 
             echo "::group::Publishing $name"
             pipeline=$(mktemp --suffix=.yaml)
-            cat > "$pipeline" <<'HEREDOC_END'
-- generate-lote:
-HEREDOC_END
-            echo "    - $dir" >> "$pipeline"
-            cat >> "$pipeline" <<'HEREDOC_END'
-- increment-lote-sequence: []
-- publish-lote:
-HEREDOC_END
-            echo "    - $OUTPUT_DIR" >> "$pipeline"
-            echo "    - $PKCS11_URI" >> "$pipeline"
-            echo "    - $PKCS11_KEY_LABEL" >> "$pipeline"
-            echo "    - $PKCS11_CERT_LABEL" >> "$pipeline"
-            echo "    - $PKCS11_KEY_ID" >> "$pipeline"
+            {
+              echo "- generate-lote:"
+              echo "    - $dir"
+              echo "- increment-lote-sequence: []"
+              echo "- publish-lote:"
+              echo "    - $OUTPUT_DIR"
+              echo "    - $PKCS11_URI"
+              echo "    - $PKCS11_KEY_LABEL"
+              echo "    - $PKCS11_CERT_LABEL"
+              echo "    - $PKCS11_KEY_ID"
+            } > "$pipeline"
             tsl-tool "$pipeline"
             rm -f "$pipeline"
             echo "::endgroup::"
