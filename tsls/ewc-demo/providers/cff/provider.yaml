@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "CFF"
+tradeName:
+  - language: en
+    value: "Cyclades Fast Ferries"
+informationURI:
+  - language: en
+    value: "https://fastferries.com.gr/en/"
+address:
+  postal:
+    streetAddress: "10 Skouze str"
+    locality: "Piraeus"
+    postalCode: "18536"
+    countryName: "EL"
+  electronic:
+    - "mailto:triantafyllou.ni@aegean.gr"

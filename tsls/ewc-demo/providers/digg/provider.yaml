@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "DIGG"
+tradeName:
+  - language: en
+    value: "Agency for digital government"
+informationURI:
+  - language: en
+    value: "https://www.digg.se"
+address:
+  postal:
+    streetAddress: "Box 14"
+    locality: "Sundsvall"
+    postalCode: "851 02"
+    countryName: "SE"
+  electronic:
+    - "mailto:info@digg.se"

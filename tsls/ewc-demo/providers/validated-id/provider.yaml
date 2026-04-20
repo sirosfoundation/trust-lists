@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "Validated ID"
+tradeName:
+  - language: en
+    value: "Validated ID S.L."
+informationURI:
+  - language: en
+    value: "https://validatedid.com"
+address:
+  postal:
+    streetAddress: "C/ Sepúlveda 143, 4º2ª"
+    locality: "Barcelona"
+    postalCode: "08011"
+    countryName: "ES"
+  electronic:
+    - "mailto:vididentity-projects@validatedid.com"

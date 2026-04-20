@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "Tinexta Infocert"
+tradeName:
+  - language: en
+    value: "Tinexta Infocert"
+informationURI:
+  - language: en
+    value: "https://www.infocert.it"
+address:
+  postal:
+    streetAddress: "Piazzale Flaminio 1B"
+    locality: "Rome"
+    postalCode: "00196"
+    countryName: "Italy"
+  electronic:
+    - "mailto:leone.riello@infocert.it"

@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "iGrant.io, Sweden"
+tradeName:
+  - language: en
+    value: "LCubed AB"
+informationURI:
+  - language: en
+    value: "https://igrant.io"
+address:
+  postal:
+    streetAddress: "Bössvägen 28"
+    locality: "Sollentuna, Stockholm"
+    postalCode: "19255"
+    countryName: "SE"
+  electronic:
+    - "mailto:support@igrant.io"

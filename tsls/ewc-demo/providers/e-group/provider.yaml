@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "E-Group"
+tradeName:
+  - language: en
+    value: "E-Group ICT Software"
+informationURI:
+  - language: en
+    value: "https://www.egroup.hu/"
+address:
+  postal:
+    streetAddress: "Also Torokvesz ut 2"
+    locality: "Budapest"
+    postalCode: "1022"
+    countryName: "HU"
+  electronic:
+    - "mailto:info@egroup.hu"

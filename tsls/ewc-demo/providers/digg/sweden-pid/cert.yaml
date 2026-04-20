@@ -1,0 +1,5 @@
+serviceNames:
+  - language: en
+    value: "Sweden PID"
+serviceType: "https://ewc-consortium.github.io/ewc-trust-list/TrstSvc/Svctype/PID"
+status: "https://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted/"

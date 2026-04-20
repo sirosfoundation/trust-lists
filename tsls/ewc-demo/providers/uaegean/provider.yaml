@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "Uaegean"
+tradeName:
+  - language: en
+    value: "University of the Aegean"
+informationURI:
+  - language: en
+    value: "https://www.aegean.edu/"
+address:
+  postal:
+    streetAddress: "University Hill"
+    locality: "Μytilene"
+    postalCode: "81100"
+    countryName: "EL"
+  electronic:
+    - "mailto:triantafyllou.ni@aegean.gr"

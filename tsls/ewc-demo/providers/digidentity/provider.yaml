@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "Digidentity"
+tradeName:
+  - language: en
+    value: "Digidentity BV"
+informationURI:
+  - language: en
+    value: "https://www.digidentity.eu/"
+address:
+  postal:
+    streetAddress: "Schenkkade 50"
+    locality: "Den Haag"
+    postalCode: "2595 AR"
+    countryName: "NL"
+  electronic:
+    - "mailto:helpdesk@digidentity.co.uk"

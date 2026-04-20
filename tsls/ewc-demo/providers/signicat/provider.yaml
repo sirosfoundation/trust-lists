@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "Signicat"
+tradeName:
+  - language: en
+    value: "Signicat AS"
+informationURI:
+  - language: en
+    value: "https://www.signicat.com/"
+address:
+  postal:
+    streetAddress: "Beddingen 16"
+    locality: "Trondheim"
+    postalCode: "7042"
+    countryName: "NO"
+  electronic:
+    - "mailto:technicalsupport@signicat.com"

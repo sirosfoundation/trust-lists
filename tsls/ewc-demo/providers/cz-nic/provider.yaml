@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "CZ.NIC"
+tradeName:
+  - language: en
+    value: "CZ.NIC, z. s. p. o."
+informationURI:
+  - language: en
+    value: "https://www.nic.cz/"
+address:
+  postal:
+    streetAddress: "Milesovska 5"
+    locality: "Prague"
+    postalCode: "13000"
+    countryName: "CZ"
+  electronic:
+    - "mailto:jaromir.talir@nic.cz"

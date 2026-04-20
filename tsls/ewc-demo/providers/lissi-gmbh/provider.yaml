@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "Lissi GmbH"
+tradeName:
+  - language: en
+    value: "Lissi GmbH"
+informationURI:
+  - language: en
+    value: "https://lissi.id/"
+address:
+  postal:
+    streetAddress: "Eschersheimer Landstrasse 6"
+    locality: "Frankfurt"
+    postalCode: "60318"
+    countryName: "DE"
+  electronic:
+    - "mailto:wallet@lissi.id"

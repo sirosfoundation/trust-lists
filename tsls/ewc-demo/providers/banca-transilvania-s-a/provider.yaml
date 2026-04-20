@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "Banca Transilvania S.A."
+tradeName:
+  - language: en
+    value: "Banca Transilvania S.A."
+informationURI:
+  - language: en
+    value: "https://www.bancatransilvania.ro"
+address:
+  postal:
+    streetAddress: "Calea Dorobanților 30-36"
+    locality: "Cluj-Napoca"
+    postalCode: "400121"
+    countryName: "RO"
+  electronic:
+    - "mailto:contact@btrl.ro"

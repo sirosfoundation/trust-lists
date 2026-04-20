@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "Buda Castle Experience"
+tradeName:
+  - language: en
+    value: "Budavári Palota - RDE Pilot"
+informationURI:
+  - language: en
+    value: "https://rde-ewc.hu/budacastleexperience_dev"
+address:
+  postal:
+    streetAddress: "Szent György tér 2"
+    locality: "Budapest"
+    postalCode: "1014"
+    countryName: "HU"
+  electronic:
+    - "mailto:info@rde-ewc.hu"

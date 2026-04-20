@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "IDunion"
+tradeName:
+  - language: en
+    value: "IDunion SCE"
+informationURI:
+  - language: en
+    value: "https://idunion.eu"
+address:
+  postal:
+    streetAddress: "Rheinstrasse 5"
+    locality: "Langen (Hessen)"
+    postalCode: "63225"
+    countryName: "DE"
+  electronic:
+    - "mailto:info@idunion.eu"

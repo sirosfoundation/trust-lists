@@ -1,0 +1,18 @@
+names:
+  - language: en
+    value: "INTESI GROUP"
+tradeName:
+  - language: en
+    value: "INTESI GROUP SpA"
+informationURI:
+  - language: en
+    value: "https://www.intesigroup.com/en/"
+address:
+  postal:
+    streetAddress: "Via Torino 48"
+    locality: "Milan"
+    stateOrProvince: "Milan"
+    postalCode: "20123"
+    countryName: "IT"
+  electronic:
+    - "mailto:info@intesigroup.com"

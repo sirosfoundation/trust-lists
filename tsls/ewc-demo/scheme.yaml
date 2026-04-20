@@ -1,0 +1,5 @@
+operatorNames:
+  - language: en
+    value: "EWC Consortium"
+type: "https://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric/"
+sequenceNumber: 1

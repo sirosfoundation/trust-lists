@@ -1,0 +1,17 @@
+names:
+  - language: en
+    value: "GRNET"
+tradeName:
+  - language: en
+    value: "GRNET SA"
+informationURI:
+  - language: en
+    value: "https://grnet.gr"
+address:
+  postal:
+    streetAddress: "Kifisias Av. 7"
+    locality: "Athens"
+    postalCode: "11523"
+    countryName: "EL"
+  electronic:
+    - "mailto:info@grnet.gr"
