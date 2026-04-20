@@ -8,6 +8,6 @@ schemeName:
 
 schemeType: "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric"
 
-territory: "SE"
+territory: "demo"
 
 sequenceNumber: 1

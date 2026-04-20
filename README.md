@@ -66,7 +66,7 @@ scripts/                        # Build helpers
      - language: en
        value: "My Trust Scheme"
    schemeType: "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric"
-   territory: "SE"
+   territory: "demo"
    sequenceNumber: 1
    ```
 3. Add entities under `entities/` as described above
