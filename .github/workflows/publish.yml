@@ -49,7 +49,10 @@ jobs:
           go-version: '1.26'
 
       - name: Install tsl-tool
-        run: go install github.com/sirosfoundation/g119612/cmd/tsl-tool@latest
+        run: |
+          git clone --depth 1 https://github.com/sirosfoundation/g119612.git /tmp/g119612
+          cd /tmp/g119612
+          go install ./cmd/tsl-tool
 
       - name: Resolve signing mode
         id: mode
