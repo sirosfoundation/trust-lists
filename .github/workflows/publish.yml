@@ -52,7 +52,8 @@ jobs:
           rm -rf /tmp/g119612
           git clone --depth 1 https://github.com/sirosfoundation/g119612.git /tmp/g119612
           cd /tmp/g119612
-          go install ./cmd/tsl-tool
+          go build -o "$(go env GOPATH)/bin/tsl-tool" ./cmd/tsl-tool
+          tsl-tool --version || true
 
       - name: Resolve signing mode
         id: mode
