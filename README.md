@@ -1,7 +1,7 @@
 # trust-lists
 
 Published [ETSI TS 119 602](https://www.etsi.org/deliver/etsi_ts/119600_119699/119602/)
-Lists of Trusted Entities (LoTE) and Trust Status Lists (TSL) for the SIROS ecosystem.
+Lists of Trusted Entities (LoTE) and Trust Status Lists (TSL) for the EUDI wallet ecosystem.
 
 **Live site:** [trust.siros.org](https://trust.siros.org)
 
