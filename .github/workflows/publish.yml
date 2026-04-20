@@ -201,6 +201,8 @@ jobs:
               echo "    - $PKCS11_CERT_LABEL"
               echo "    - $PKCS11_KEY_ID"
             } > "$pipeline"
+            echo "Pipeline content:"
+            cat "$pipeline"
             tsl-tool "$pipeline"
             rm -f "$pipeline"
             echo "::endgroup::"
