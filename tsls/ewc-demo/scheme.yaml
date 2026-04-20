@@ -3,3 +3,5 @@ operatorNames:
     value: "EWC Consortium"
 type: "https://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric/"
 sequenceNumber: 1
+distributionPoints:
+  - "https://trust.siros.org/ewc-demo.xml"
