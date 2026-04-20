@@ -162,6 +162,19 @@ jobs:
           YUBIHSM_CERT_LABEL: ${{ secrets.YUBIHSM_CERT_LABEL }}
           YUBIHSM_KEY_ID: ${{ secrets.YUBIHSM_KEY_ID }}
 
+      # ── Verify PKCS#11 token ──────────────────────────────────────
+      - name: Verify PKCS#11 token objects
+        if: steps.mode.outputs.signing_mode != 'dev'
+        run: |
+          set -euo pipefail
+          MODULE=$(echo "$PKCS11_URI" | sed -n 's/.*module=\([^;]*\).*/\1/p')
+          TOKEN=$(echo "$PKCS11_URI" | sed -n 's/.*token=\([^;]*\).*/\1/p')
+          echo "Module: $MODULE"
+          echo "Token: $TOKEN"
+          echo "Key label: $PKCS11_KEY_LABEL (ID: $PKCS11_KEY_ID)"
+          echo "Cert label: $PKCS11_CERT_LABEL (ID: $PKCS11_KEY_ID)"
+          pkcs11-tool --module "$MODULE" --token-label "$TOKEN" --list-objects 2>&1 || true
+
       # ── Generate & sign all LoTE instances ────────────────────────
       - name: Generate and sign LoTE instances
         run: |
