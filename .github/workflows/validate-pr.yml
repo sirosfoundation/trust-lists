@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'lists/**'
+      - 'tsls/**'
       - 'pipelines/**'
 
 permissions:
@@ -41,6 +42,38 @@ jobs:
             if tsl-tool "$pipeline"; then
               echo "✓ $name validated successfully"
               # Show what would be published
+              ls -la "$tmpdir"
+            else
+              echo "::error::$name failed validation"
+              failed=1
+            fi
+            rm -rf "$tmpdir" "$pipeline"
+            echo "::endgroup::"
+          done
+          exit $failed
+
+      - name: Validate TSL source directories
+        run: |
+          set -euo pipefail
+          failed=0
+          for dir in tsls/*/; do
+            [ -d "$dir" ] || continue
+            name=$(basename "$dir")
+            if [ ! -f "$dir/scheme.yaml" ]; then
+              echo "::warning::Skipping $name — no scheme.yaml"
+              continue
+            fi
+            echo "::group::Validating TSL $name"
+            tmpdir=$(mktemp -d)
+            pipeline=$(mktemp --suffix=.yaml)
+            cat > "$pipeline" <<EOF
+          - generate:
+              - $dir
+          - publish:
+              - $tmpdir
+          EOF
+            if tsl-tool "$pipeline"; then
+              echo "✓ $name validated successfully"
               ls -la "$tmpdir"
             else
               echo "::error::$name failed validation"

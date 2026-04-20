@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'lists/**'
+      - 'tsls/**'
       - 'pipelines/**'
       - 'templates/**'
       - 'static/**'
@@ -187,6 +188,39 @@ jobs:
               echo "    - $dir"
               echo "- increment-lote-sequence: []"
               echo "- publish-lote:"
+              echo "    - $OUTPUT_DIR"
+              echo "    - $PKCS11_URI"
+              echo "    - $PKCS11_KEY_LABEL"
+              echo "    - $PKCS11_CERT_LABEL"
+              echo "    - $PKCS11_KEY_ID"
+            } > "$pipeline"
+            echo "Pipeline content:"
+            cat "$pipeline"
+            tsl-tool "$pipeline"
+            rm -f "$pipeline"
+            echo "::endgroup::"
+          done
+
+      # ── Generate & sign all TSL instances ──────────────────────
+      - name: Generate and sign TSL instances
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_DIR"
+
+          for dir in tsls/*/; do
+            [ -d "$dir" ] || continue
+            name=$(basename "$dir")
+            if [ ! -f "$dir/scheme.yaml" ]; then
+              echo "Skipping $name — no scheme.yaml"
+              continue
+            fi
+
+            echo "::group::Publishing TSL $name"
+            pipeline=$(mktemp --suffix=.yaml)
+            {
+              echo "- generate:"
+              echo "    - $dir"
+              echo "- publish:"
               echo "    - $OUTPUT_DIR"
               echo "    - $PKCS11_URI"
               echo "    - $PKCS11_KEY_LABEL"

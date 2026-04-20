@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Build a simple index.html listing all published LoTE files.
+# Build a simple index.html listing all published trust list files.
 # Usage: build-index.sh <output-dir>
 #
 set -euo pipefail
@@ -10,6 +10,9 @@ TRUST_DOMAIN="${2:-trust.siros.org}"
 
 # Collect all published LoTE files
 mapfile -t lote_files < <(find "$OUTPUT_DIR" -maxdepth 1 -name 'lote-*.json' -not -name '*.jws' | sort)
+
+# Collect all published TSL XML files
+mapfile -t tsl_files < <(find "$OUTPUT_DIR" -maxdepth 1 -name '*.xml' | sort)
 
 cat > "$OUTPUT_DIR/index.html" <<HEADER
 <!DOCTYPE html>
@@ -68,7 +71,9 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
   <div class="content">
   <h1>${TRUST_DOMAIN}</h1>
   <p class="subtitle">Published <a href="https://www.etsi.org/deliver/etsi_ts/119600_119699/119602/">ETSI TS 119 602</a>
-     Lists of Trusted Entities (LoTE).</p>
+     Lists of Trusted Entities (LoTE) and <a href="https://www.etsi.org/deliver/etsi_ts/119600_119699/119612/">ETSI TS 119 612</a>
+     Trust Status Lists (TSL).</p>
+  <h2>Lists of Trusted Entities (LoTE)</h2>
   <table>
     <thead><tr><th>Trust List</th><th>Unsigned</th><th>Signed (JWS)</th></tr></thead>
     <tbody>
@@ -94,9 +99,40 @@ for f in "${lote_files[@]}"; do
 ROW
 done
 
-cat >> "$OUTPUT_DIR/index.html" <<FOOTER
+cat >> "$OUTPUT_DIR/index.html" <<LOTE_END
     </tbody>
   </table>
+
+LOTE_END
+
+# ── TSL section ──
+if [ ${#tsl_files[@]} -gt 0 ]; then
+  cat >> "$OUTPUT_DIR/index.html" <<TSL_HEADER
+  <h2>Trust Status Lists (TSL)</h2>
+  <table>
+    <thead><tr><th>Trust List</th><th>XML</th></tr></thead>
+    <tbody>
+TSL_HEADER
+
+  for f in "${tsl_files[@]}"; do
+    name=$(basename "$f")
+    label="${name%.xml}"
+
+    cat >> "$OUTPUT_DIR/index.html" <<ROW
+      <tr>
+        <td><strong>${label}</strong></td>
+        <td><a href="$name"><code>$name</code></a></td>
+      </tr>
+ROW
+  done
+
+  cat >> "$OUTPUT_DIR/index.html" <<TSL_END
+    </tbody>
+  </table>
+TSL_END
+fi
+
+cat >> "$OUTPUT_DIR/index.html" <<FOOTER
   </div>
 
   <footer class="footer">
@@ -109,4 +145,4 @@ cat >> "$OUTPUT_DIR/index.html" <<FOOTER
 </html>
 FOOTER
 
-echo "Generated index.html with ${#lote_files[@]} trust list(s)"
+echo "Generated index.html with ${#lote_files[@]} LoTE(s) and ${#tsl_files[@]} TSL(s)"
