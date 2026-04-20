@@ -11,7 +11,7 @@ TRUST_DOMAIN="${2:-trust.siros.org}"
 # Collect all published LoTE files
 mapfile -t lote_files < <(find "$OUTPUT_DIR" -maxdepth 1 -name 'lote-*.json' -not -name '*.jws' | sort)
 
-cat > "$OUTPUT_DIR/index.html" <<'HEADER'
+cat > "$OUTPUT_DIR/index.html" <<HEADER
 <!DOCTYPE html>
 <html lang="en">
 <head>
