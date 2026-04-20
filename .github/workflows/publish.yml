@@ -38,8 +38,9 @@ env:
 
 jobs:
   build:
-    # dev = ephemeral SoftHSM on GitHub-hosted runner; softhsm/yubihsm = self-hosted
-    runs-on: ${{ (inputs.signing_mode == 'dev' || (!inputs.signing_mode && vars.DEFAULT_SIGNING_MODE == 'dev')) && 'ubuntu-latest' || 'self-hosted' }}
+    # dev = ephemeral SoftHSM on GitHub-hosted runner; softhsm/yubihsm = self-hosted in signers group
+    runs-on:
+      group: ${{ (inputs.signing_mode == 'dev' || (!inputs.signing_mode && vars.DEFAULT_SIGNING_MODE == 'dev')) && 'Default' || 'signers' }}
     steps:
       - uses: actions/checkout@v6
 
