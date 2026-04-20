@@ -61,8 +61,6 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
       Trust Lists
     </a>
     <div class="navbar-links">
-      <a href="https://developers.siros.org">Developer Docs</a>
-      <a href="https://compliance.siros.org">Compliance</a>
       <a href="https://github.com/sirosfoundation/trust-lists">GitHub</a>
     </div>
   </nav>
