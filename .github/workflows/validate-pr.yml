@@ -22,6 +22,7 @@ jobs:
 
       - name: Install tsl-tool
         run: |
+          rm -rf /tmp/g119612
           git clone --depth 1 https://github.com/sirosfoundation/g119612.git /tmp/g119612
           cd /tmp/g119612
           go install ./cmd/tsl-tool
