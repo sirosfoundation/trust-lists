@@ -1,0 +1,232 @@
+name: Publish Trust Lists
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lists/**'
+      - 'pipelines/**'
+      - 'templates/**'
+      - 'static/**'
+  workflow_dispatch:
+    inputs:
+      signing_mode:
+        description: 'Signing mode'
+        required: true
+        default: 'softhsm'
+        type: choice
+        options:
+          - dev
+          - softhsm
+          - yubihsm
+  schedule:
+    # Rebuild every 12 hours (for external TSL refresh)
+    - cron: '0 */12 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  OUTPUT_DIR: dist
+  TRUST_DOMAIN: ${{ vars.TRUST_DOMAIN || 'trust.siros.org' }}
+
+jobs:
+  build:
+    # dev = ephemeral SoftHSM on GitHub-hosted runner; softhsm/yubihsm = self-hosted
+    runs-on: ${{ (inputs.signing_mode == 'dev' || (!inputs.signing_mode && vars.DEFAULT_SIGNING_MODE == 'dev')) && 'ubuntu-latest' || 'self-hosted' }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+
+      - name: Install tsl-tool
+        run: go install github.com/sirosfoundation/g119612/cmd/tsl-tool@latest
+
+      - name: Resolve signing mode
+        id: mode
+        run: |
+          MODE="${{ inputs.signing_mode || vars.DEFAULT_SIGNING_MODE || 'dev' }}"
+          echo "signing_mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "Signing mode: $MODE"
+
+      # ── dev: ephemeral SoftHSM2 on GitHub-hosted runner ───────────
+      - name: Setup ephemeral SoftHSM2 (dev)
+        if: steps.mode.outputs.signing_mode == 'dev'
+        run: |
+          set -euo pipefail
+          sudo apt-get update && sudo apt-get install -y softhsm2 opensc
+
+          TOKEN_DIR=$(mktemp -d)
+          cat > "$TOKEN_DIR/softhsm2.conf" <<CONF
+          directories.tokendir = $TOKEN_DIR
+          objectstore.backend = file
+          log.level = INFO
+          slots.removable = true
+          CONF
+          export SOFTHSM2_CONF="$TOKEN_DIR/softhsm2.conf"
+
+          softhsm2-util --init-token --free \
+            --label "trust-lists" \
+            --so-pin 5678 \
+            --pin 1234
+
+          for p in /usr/lib/softhsm/libsofthsm2.so /usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so; do
+            if [ -f "$p" ]; then PKCS11_MODULE="$p"; break; fi
+          done
+
+          pkcs11-tool --module "$PKCS11_MODULE" \
+            --token-label "trust-lists" \
+            --login --pin 1234 \
+            --keypairgen --key-type ec:prime256v1 \
+            --id 01 --label "signing-key"
+
+          openssl req -new -x509 -nodes \
+            -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 \
+            -keyout "$TOKEN_DIR/temp-key.pem" \
+            -out "$TOKEN_DIR/cert.pem" \
+            -days 365 \
+            -subj "/CN=${TRUST_DOMAIN} Trust List Signer (Dev)"
+
+          pkcs11-tool --module "$PKCS11_MODULE" \
+            --token-label "trust-lists" \
+            --login --pin 1234 \
+            --write-object "$TOKEN_DIR/cert.pem" --type cert \
+            --id 01 --label "signing-cert"
+
+          echo "PKCS11_URI=pkcs11:module=${PKCS11_MODULE};pin=1234;token=trust-lists" >> "$GITHUB_ENV"
+          echo "PKCS11_KEY_LABEL=signing-key" >> "$GITHUB_ENV"
+          echo "PKCS11_CERT_LABEL=signing-cert" >> "$GITHUB_ENV"
+          echo "PKCS11_KEY_ID=01" >> "$GITHUB_ENV"
+          echo "SOFTHSM2_CONF=$TOKEN_DIR/softhsm2.conf" >> "$GITHUB_ENV"
+
+      # ── softhsm: persistent SoftHSM2 on self-hosted runner ────────
+      - name: Configure persistent SoftHSM2
+        if: steps.mode.outputs.signing_mode == 'softhsm'
+        run: |
+          set -euo pipefail
+          SOFTHSM_CONF="${SOFTHSM_CONF_PATH:-/etc/softhsm/trust-lists.conf}"
+          if [ ! -f "$SOFTHSM_CONF" ]; then
+            echo "::error::SoftHSM2 config not found at $SOFTHSM_CONF — run scripts/setup-softhsm-runner.sh on the runner host first"
+            exit 1
+          fi
+
+          echo "SOFTHSM2_CONF=$SOFTHSM_CONF" >> "$GITHUB_ENV"
+
+          # Read PKCS#11 module path from runner env or default
+          PKCS11_MODULE="${SOFTHSM_MODULE_PATH:-}"
+          if [ -z "$PKCS11_MODULE" ]; then
+            for p in /usr/lib/softhsm/libsofthsm2.so /usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so /usr/lib64/softhsm/libsofthsm2.so; do
+              if [ -f "$p" ]; then PKCS11_MODULE="$p"; break; fi
+            done
+          fi
+
+          echo "PKCS11_URI=pkcs11:module=${PKCS11_MODULE};pin=${SOFTHSM_PIN};token=${SOFTHSM_TOKEN_LABEL}" >> "$GITHUB_ENV"
+          echo "PKCS11_KEY_LABEL=${SOFTHSM_KEY_LABEL:-signing-key}" >> "$GITHUB_ENV"
+          echo "PKCS11_CERT_LABEL=${SOFTHSM_CERT_LABEL:-signing-cert}" >> "$GITHUB_ENV"
+          echo "PKCS11_KEY_ID=${SOFTHSM_KEY_ID:-01}" >> "$GITHUB_ENV"
+        env:
+          SOFTHSM_CONF_PATH: ${{ vars.SOFTHSM_CONF_PATH }}
+          SOFTHSM_MODULE_PATH: ${{ vars.SOFTHSM_MODULE_PATH }}
+          SOFTHSM_PIN: ${{ secrets.SOFTHSM_PIN }}
+          SOFTHSM_TOKEN_LABEL: ${{ vars.SOFTHSM_TOKEN_LABEL || 'trust-lists' }}
+          SOFTHSM_KEY_LABEL: ${{ vars.SOFTHSM_KEY_LABEL }}
+          SOFTHSM_CERT_LABEL: ${{ vars.SOFTHSM_CERT_LABEL }}
+          SOFTHSM_KEY_ID: ${{ vars.SOFTHSM_KEY_ID }}
+
+      # ── yubihsm: YubiHSM2 on self-hosted runner ──────────────────
+      - name: Configure YubiHSM2 signing environment
+        if: steps.mode.outputs.signing_mode == 'yubihsm'
+        run: |
+          set -euo pipefail
+          echo "PKCS11_URI=pkcs11:module=${YUBIHSM_PKCS11_MODULE};pin=${YUBIHSM_PIN};token=${YUBIHSM_TOKEN_LABEL}" >> "$GITHUB_ENV"
+          echo "PKCS11_KEY_LABEL=${YUBIHSM_KEY_LABEL}" >> "$GITHUB_ENV"
+          echo "PKCS11_CERT_LABEL=${YUBIHSM_CERT_LABEL}" >> "$GITHUB_ENV"
+          echo "PKCS11_KEY_ID=${YUBIHSM_KEY_ID}" >> "$GITHUB_ENV"
+        env:
+          YUBIHSM_PKCS11_MODULE: ${{ secrets.YUBIHSM_PKCS11_MODULE }}
+          YUBIHSM_PIN: ${{ secrets.YUBIHSM_PIN }}
+          YUBIHSM_TOKEN_LABEL: ${{ secrets.YUBIHSM_TOKEN_LABEL }}
+          YUBIHSM_KEY_LABEL: ${{ secrets.YUBIHSM_KEY_LABEL }}
+          YUBIHSM_CERT_LABEL: ${{ secrets.YUBIHSM_CERT_LABEL }}
+          YUBIHSM_KEY_ID: ${{ secrets.YUBIHSM_KEY_ID }}
+
+      # ── Generate & sign all LoTE instances ────────────────────────
+      - name: Generate and sign LoTE instances
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_DIR"
+
+          for dir in lists/*/; do
+            name=$(basename "$dir")
+            if [ ! -f "$dir/scheme.yaml" ]; then
+              echo "Skipping $name — no scheme.yaml"
+              continue
+            fi
+
+            echo "::group::Publishing $name"
+            pipeline=$(mktemp --suffix=.yaml)
+            cat > "$pipeline" <<EOF
+          - generate-lote:
+              - $dir
+          - increment-lote-sequence:
+          - publish-lote:
+              - $OUTPUT_DIR
+              - $PKCS11_URI
+              - $PKCS11_KEY_LABEL
+              - $PKCS11_CERT_LABEL
+              - $PKCS11_KEY_ID
+          EOF
+            tsl-tool "$pipeline"
+            rm -f "$pipeline"
+            echo "::endgroup::"
+          done
+
+      - name: Run custom pipelines
+        run: |
+          set -euo pipefail
+          for p in pipelines/*.yaml; do
+            [ -f "$p" ] || continue
+            echo "::group::Running $(basename "$p")"
+            tsl-tool "$p"
+            echo "::endgroup::"
+          done
+
+      # ── Build static site ─────────────────────────────────────────
+      - name: Build landing page
+        run: |
+          set -euo pipefail
+
+          # Copy static assets
+          if [ -d static ]; then
+            cp -r static "$OUTPUT_DIR/static"
+          fi
+
+          # Write CNAME from configured domain
+          echo "$TRUST_DOMAIN" > "$OUTPUT_DIR/CNAME"
+
+          # Generate index page from template
+          if [ -f scripts/build-index.sh ]; then
+            bash scripts/build-index.sh "$OUTPUT_DIR" "$TRUST_DOMAIN"
+          fi
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.OUTPUT_DIR }}
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

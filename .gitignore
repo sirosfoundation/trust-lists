@@ -1,0 +1,4 @@
+dist/
+*.pem
+*.key
+softhsm2.conf

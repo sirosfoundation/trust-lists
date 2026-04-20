@@ -1,0 +1,14 @@
+names:
+  - language: en
+    value: "SIROS Identity Credential Issuer"
+
+entityId: "https://issuer.siros.org"
+
+status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"
+
+services:
+  - serviceNames:
+      - language: en
+        value: "SIROS Identity Credential Issuance"
+    serviceType: "http://uri.etsi.org/TrstSvc/Svctype/CA/QC"
+    status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"

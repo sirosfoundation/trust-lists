@@ -1,0 +1,13 @@
+operatorNames:
+  - language: en
+    value: "SIROS Foundation"
+
+schemeName:
+  - language: en
+    value: "SIROS Demo Trust List"
+
+schemeType: "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric"
+
+territory: "SE"
+
+sequenceNumber: 1

@@ -1,0 +1,67 @@
+name: Validate PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lists/**'
+      - 'pipelines/**'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+
+      - name: Install tsl-tool
+        run: go install github.com/sirosfoundation/g119612/cmd/tsl-tool@latest
+
+      - name: Validate LoTE source directories
+        run: |
+          set -euo pipefail
+          failed=0
+          for dir in lists/*/; do
+            name=$(basename "$dir")
+            if [ ! -f "$dir/scheme.yaml" ]; then
+              echo "::warning::Skipping $name — no scheme.yaml"
+              continue
+            fi
+            echo "::group::Validating $name"
+            tmpdir=$(mktemp -d)
+            pipeline=$(mktemp --suffix=.yaml)
+            cat > "$pipeline" <<EOF
+          - generate-lote:
+              - $dir
+          - publish-lote:
+              - $tmpdir
+          EOF
+            if tsl-tool "$pipeline"; then
+              echo "✓ $name validated successfully"
+              # Show what would be published
+              ls -la "$tmpdir"
+            else
+              echo "::error::$name failed validation"
+              failed=1
+            fi
+            rm -rf "$tmpdir" "$pipeline"
+            echo "::endgroup::"
+          done
+          exit $failed
+
+      - name: Validate custom pipelines (unsigned)
+        run: |
+          set -euo pipefail
+          for p in pipelines/*.yaml; do
+            [ -f "$p" ] || continue
+            name=$(basename "$p")
+            echo "::group::Validating pipeline $name"
+            tsl-tool "$p"
+            echo "::endgroup::"
+          done
