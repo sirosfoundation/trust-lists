@@ -71,6 +71,9 @@ jobs:
               - $dir
           - publish:
               - $tmpdir
+          - convert-to-lote: []
+          - publish-lote:
+              - $tmpdir
           EOF
             if tsl-tool "$pipeline"; then
               echo "✓ $name validated successfully"
