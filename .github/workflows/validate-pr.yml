@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'lists/**'
+      - 'lotls/**'
       - 'tsls/**'
       - 'pipelines/**'
 
@@ -18,7 +19,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install tsl-tool
-        uses: sirosfoundation/g119612@v0.2.2
+        uses: sirosfoundation/g119612@v0.3.0
 
       - name: Validate LoTE source directories
         run: |
@@ -38,6 +39,7 @@ jobs:
               - $dir
           - publish-lote:
               - $tmpdir
+              - xml
           EOF
             if tsl-tool "$pipeline"; then
               echo "✓ $name validated successfully"
@@ -74,6 +76,40 @@ jobs:
           - convert-to-lote: []
           - publish-lote:
               - $tmpdir
+              - xml
+          EOF
+            if tsl-tool "$pipeline"; then
+              echo "✓ $name validated successfully"
+              ls -la "$tmpdir"
+            else
+              echo "::error::$name failed validation"
+              failed=1
+            fi
+            rm -rf "$tmpdir" "$pipeline"
+            echo "::endgroup::"
+          done
+          exit $failed
+
+      - name: Validate LoTL source directories
+        run: |
+          set -euo pipefail
+          failed=0
+          for dir in lotls/*/; do
+            [ -d "$dir" ] || continue
+            name=$(basename "$dir")
+            if [ ! -f "$dir/lotl.yaml" ]; then
+              echo "::warning::Skipping $name — no lotl.yaml"
+              continue
+            fi
+            echo "::group::Validating LoTL $name"
+            tmpdir=$(mktemp -d)
+            pipeline=$(mktemp --suffix=.yaml)
+            cat > "$pipeline" <<EOF
+          - generate-lotl:
+              - $dir
+          - publish-lote:
+              - $tmpdir
+              - xml
           EOF
             if tsl-tool "$pipeline"; then
               echo "✓ $name validated successfully"
