@@ -32,6 +32,7 @@ lists/
         <service>/
           cert.pem
           cert.yaml
+    lotl.yaml                   # LoTL: replaces scheme.yaml for Lists of Trusted Lists
 
 pipelines/                      # Custom pipelines (e.g. EU LOTL fetch)
 static/                         # Assets for the landing page
