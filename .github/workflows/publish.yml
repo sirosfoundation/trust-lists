@@ -10,6 +10,7 @@ on:
       - 'pipelines/**'
       - 'templates/**'
       - 'static/**'
+      - 'scripts/**'
   workflow_dispatch:
     inputs:
       signing_mode:
