@@ -7,18 +7,20 @@ Lists of Trusted Entities (LoTE) and Trust Status Lists (TSL) for the EUDI walle
 
 ## How it works
 
-1. Trust list source data lives under `lists/` (LoTE) and `tsls/` (TSL) as YAML + certificates
-2. Pull requests add, update, or remove trusted entities — reviewed before merge
-3. On merge to `main`, GitHub Actions runs
-   [g119612/tsl-tool](https://github.com/sirosfoundation/g119612) to generate
-   and sign LoTE JSON and TSL XML documents
-4. Signed output is deployed to GitHub Pages at `trust.siros.org`
+1. Trust list source data lives under `lists/` (LoTE), `tsls/` (TSL), and `lotls/` (LoTL) as YAML + certificates
+2. Each directory contains a `.pipeline.yaml` that defines its processing pipeline
+3. Pull requests add, update, or remove trusted entities — reviewed before merge
+4. On merge to `main`, GitHub Actions runs
+   [g119612/tsl-tool](https://github.com/sirosfoundation/g119612) to execute
+   each directory's pipeline, generating and signing the output documents
+5. Signed output is deployed to GitHub Pages at `trust.siros.org`
 
 ## Repository structure
 
 ```
 lists/
   <instance>/                   # One directory per LoTE trust list
+    .pipeline.yaml              # Pipeline steps for this list
     scheme.yaml                 # LoTE scheme metadata
     entities/
       <entity>/                 # One directory per trusted entity
@@ -28,6 +30,7 @@ lists/
 
 tsls/
   <instance>/                   # One directory per TSL
+    .pipeline.yaml              # Pipeline steps for this list
     scheme.yaml                 # TSL scheme metadata (ETSI TS 119 612)
     providers/
       <provider>/               # One directory per trust service provider
@@ -35,6 +38,11 @@ tsls/
         <service>/              # One directory per trust service
           cert.pem              # X.509 service certificate
           cert.yaml             # Service metadata (serviceNames, serviceType, status)
+
+lotls/
+  <instance>/                   # One directory per List of Trusted Lists
+    .pipeline.yaml              # Pipeline steps for this LoTL
+    scheme.yaml                 # LoTL scheme metadata
 
 pipelines/                      # Custom pipelines (e.g. EU LOTL fetch)
 
@@ -168,16 +176,87 @@ Then configure the repo (the script prints the exact values):
 | `YUBIHSM_CERT_LABEL` | Signing certificate label |
 | `YUBIHSM_KEY_ID` | Key ID (hex, e.g. `01`) |
 
+## Pipeline files
+
+Each `lists/`, `tsls/`, and `lotls/` directory contains a `.pipeline.yaml` that
+defines the processing steps for that trust list. The workflow reads each file,
+expands `${ENV_VAR}` placeholders with `envsubst`, and passes the result to
+`tsl-tool`.
+
+Example — a LoTE list (`lists/siros-demo/.pipeline.yaml`):
+
+```yaml
+- generate-lote:
+    - ${LIST_DIR}
+- increment-lote-sequence: []
+- publish-lote:
+    - ${OUTPUT_DIR}
+    - ${PKCS11_URI}
+    - ${PKCS11_KEY_LABEL}
+    - ${PKCS11_CERT_LABEL}
+    - ${PKCS11_KEY_ID}
+    - xml
+```
+
+Example — a TSL with LoTE conversion (`tsls/ewc-demo/.pipeline.yaml`):
+
+```yaml
+- generate:
+    - ${LIST_DIR}
+- publish:
+    - ${OUTPUT_DIR}
+    - ${PKCS11_URI}
+    - ${PKCS11_KEY_LABEL}
+    - ${PKCS11_CERT_LABEL}
+    - ${PKCS11_KEY_ID}
+- convert-to-lote: []
+- publish-lote:
+    - ${OUTPUT_DIR}
+    - ${PKCS11_URI}
+    - ${PKCS11_KEY_LABEL}
+    - ${PKCS11_CERT_LABEL}
+    - ${PKCS11_KEY_ID}
+    - xml
+```
+
+Example — a List of Trusted Lists (`lotls/siros-demo/.pipeline.yaml`):
+
+```yaml
+- generate-lotl:
+    - ${LIST_DIR}
+- publish-lote:
+    - ${OUTPUT_DIR}
+    - ${PKCS11_URI}
+    - ${PKCS11_KEY_LABEL}
+    - ${PKCS11_CERT_LABEL}
+    - ${PKCS11_KEY_ID}
+```
+
+The `xml` flag on `publish-lote` controls whether an XML companion is also
+generated alongside the JSON output.
+
 ## Output
 
 Each LoTE trust list produces:
 
-- `lote-<territory>.json` — Unsigned LoTE JSON
-- `lote-<territory>.json.jws` — JWS-signed LoTE
+- `lote-<name>.json` — Unsigned LoTE JSON
+- `lote-<name>.json.jws` — JWS-signed LoTE
+- `lote-<name>.xml` — LoTE XML (when `xml` flag is set in the pipeline)
 
 Each TSL produces:
 
-- `<name>.xml` — Signed TSL XML (filename derived from distribution points or defaults to `tsl-<index>.xml`)
+- `<name>.xml` — Signed TSL XML (XML-DSIG with XAdES)
+
+TSLs with a `convert-to-lote` step additionally produce:
+
+- `<name>.json` — Converted LoTE JSON
+- `<name>.json.jws` — JWS-signed converted LoTE
+- `<name>.xml` — LoTE XML (when `xml` flag is set)
+
+Each LoTL produces:
+
+- `list_of_trusted_lists-<name>.json` — LoTL JSON
+- `list_of_trusted_lists-<name>.json.jws` — JWS-signed LoTL
 
 Available at `https://trust.siros.org/`
 
