@@ -306,7 +306,7 @@ jobs:
             bash scripts/build-index.sh "$OUTPUT_DIR" "$TRUST_DOMAIN"
           fi
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ env.OUTPUT_DIR }}
 
