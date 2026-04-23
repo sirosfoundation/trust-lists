@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install tsl-tool
-        uses: sirosfoundation/g119612@v0.3.0
+        uses: sirosfoundation/g119612@v0.3.1
 
       - name: Validate LoTE source directories
         run: |
