@@ -169,108 +169,27 @@ jobs:
           echo "Cert label: $PKCS11_CERT_LABEL (ID: $PKCS11_KEY_ID)"
           pkcs11-tool --module "$MODULE" --token-label "$TOKEN" --list-objects 2>&1 || true
 
-      # ── Generate & sign all LoTE instances ────────────────────────
-      - name: Generate and sign LoTE instances
+      # ── Run all .pipeline.yaml files ────────────────────────────
+      - name: Run trust list pipelines
         run: |
           set -euo pipefail
           mkdir -p "$OUTPUT_DIR"
+          export OUTPUT_DIR PKCS11_URI PKCS11_KEY_LABEL PKCS11_CERT_LABEL PKCS11_KEY_ID
 
-          for dir in lists/*/; do
+          for dir in lists/*/ tsls/*/ lotls/*/; do
+            [ -d "$dir" ] || continue
             name=$(basename "$dir")
-            if [ ! -f "$dir/scheme.yaml" ]; then
-              echo "Skipping $name — no scheme.yaml"
+
+            if [ -f "$dir/.pipeline.yaml" ]; then
+              template="$dir/.pipeline.yaml"
+            else
+              echo "Skipping $name — no .pipeline.yaml"
               continue
             fi
 
             echo "::group::Publishing $name"
             pipeline=$(mktemp --suffix=.yaml)
-            {
-              echo "- generate-lote:"
-              echo "    - $dir"
-              echo "- increment-lote-sequence: []"
-              echo "- publish-lote:"
-              echo "    - $OUTPUT_DIR"
-              echo "    - $PKCS11_URI"
-              echo "    - $PKCS11_KEY_LABEL"
-              echo "    - $PKCS11_CERT_LABEL"
-              echo "    - $PKCS11_KEY_ID"
-              echo "    - xml"
-            } > "$pipeline"
-            echo "Pipeline content:"
-            cat "$pipeline"
-            tsl-tool "$pipeline"
-            rm -f "$pipeline"
-            echo "::endgroup::"
-          done
-
-      # ── Generate & sign all TSL instances ──────────────────────
-      - name: Generate and sign TSL instances
-        run: |
-          set -euo pipefail
-          mkdir -p "$OUTPUT_DIR"
-
-          for dir in tsls/*/; do
-            [ -d "$dir" ] || continue
-            name=$(basename "$dir")
-            if [ ! -f "$dir/scheme.yaml" ]; then
-              echo "Skipping $name — no scheme.yaml"
-              continue
-            fi
-
-            echo "::group::Publishing TSL $name"
-            pipeline=$(mktemp --suffix=.yaml)
-            {
-              echo "- generate:"
-              echo "    - $dir"
-              echo "- publish:"
-              echo "    - $OUTPUT_DIR"
-              echo "    - $PKCS11_URI"
-              echo "    - $PKCS11_KEY_LABEL"
-              echo "    - $PKCS11_CERT_LABEL"
-              echo "    - $PKCS11_KEY_ID"
-              echo "- convert-to-lote: []"
-              echo "- publish-lote:"
-              echo "    - $OUTPUT_DIR"
-              echo "    - $PKCS11_URI"
-              echo "    - $PKCS11_KEY_LABEL"
-              echo "    - $PKCS11_CERT_LABEL"
-              echo "    - $PKCS11_KEY_ID"
-              echo "    - xml"
-            } > "$pipeline"
-            echo "Pipeline content:"
-            cat "$pipeline"
-            tsl-tool "$pipeline"
-            rm -f "$pipeline"
-            echo "::endgroup::"
-          done
-
-      # ── Generate & sign all LoTL instances ────────────────────────
-      - name: Generate and sign LoTL instances
-        run: |
-          set -euo pipefail
-          mkdir -p "$OUTPUT_DIR"
-
-          for dir in lotls/*/; do
-            [ -d "$dir" ] || continue
-            name=$(basename "$dir")
-            if [ ! -f "$dir/lotl.yaml" ]; then
-              echo "Skipping $name — no lotl.yaml"
-              continue
-            fi
-
-            echo "::group::Publishing LoTL $name"
-            pipeline=$(mktemp --suffix=.yaml)
-            {
-              echo "- generate-lotl:"
-              echo "    - $dir"
-              echo "- publish-lote:"
-              echo "    - $OUTPUT_DIR"
-              echo "    - $PKCS11_URI"
-              echo "    - $PKCS11_KEY_LABEL"
-              echo "    - $PKCS11_CERT_LABEL"
-              echo "    - $PKCS11_KEY_ID"
-              echo "    - xml"
-            } > "$pipeline"
+            LIST_DIR="$dir" envsubst < "$template" > "$pipeline"
             echo "Pipeline content:"
             cat "$pipeline"
             tsl-tool "$pipeline"
@@ -281,10 +200,14 @@ jobs:
       - name: Run custom pipelines
         run: |
           set -euo pipefail
+          export OUTPUT_DIR PKCS11_URI PKCS11_KEY_LABEL PKCS11_CERT_LABEL PKCS11_KEY_ID
           for p in pipelines/*.yaml; do
             [ -f "$p" ] || continue
             echo "::group::Running $(basename "$p")"
-            tsl-tool "$p"
+            pipeline=$(mktemp --suffix=.yaml)
+            envsubst < "$p" > "$pipeline"
+            tsl-tool "$pipeline"
+            rm -f "$pipeline"
             echo "::endgroup::"
           done
 

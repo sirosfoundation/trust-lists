@@ -21,63 +21,31 @@ jobs:
       - name: Install tsl-tool
         uses: sirosfoundation/g119612@v0.3.2
 
-      - name: Validate LoTE source directories
+      - name: Validate trust list pipelines
         run: |
           set -euo pipefail
           failed=0
-          for dir in lists/*/; do
+
+          for dir in lists/*/ tsls/*/ lotls/*/; do
+            [ -d "$dir" ] || continue
             name=$(basename "$dir")
-            if [ ! -f "$dir/scheme.yaml" ]; then
-              echo "::warning::Skipping $name — no scheme.yaml"
+
+            if [ ! -f "$dir/.pipeline.yaml" ]; then
+              echo "::warning::Skipping $name — no .pipeline.yaml"
               continue
             fi
+
             echo "::group::Validating $name"
             tmpdir=$(mktemp -d)
             pipeline=$(mktemp --suffix=.yaml)
-            cat > "$pipeline" <<EOF
-          - generate-lote:
-              - $dir
-          - publish-lote:
-              - $tmpdir
-              - xml
-          EOF
-            if tsl-tool "$pipeline"; then
-              echo "✓ $name validated successfully"
-              # Show what would be published
-              ls -la "$tmpdir"
-            else
-              echo "::error::$name failed validation"
-              failed=1
-            fi
-            rm -rf "$tmpdir" "$pipeline"
-            echo "::endgroup::"
-          done
-          exit $failed
-
-      - name: Validate TSL source directories
-        run: |
-          set -euo pipefail
-          failed=0
-          for dir in tsls/*/; do
-            [ -d "$dir" ] || continue
-            name=$(basename "$dir")
-            if [ ! -f "$dir/scheme.yaml" ]; then
-              echo "::warning::Skipping $name — no scheme.yaml"
-              continue
-            fi
-            echo "::group::Validating TSL $name"
-            tmpdir=$(mktemp -d)
-            pipeline=$(mktemp --suffix=.yaml)
-            cat > "$pipeline" <<EOF
-          - generate:
-              - $dir
-          - publish:
-              - $tmpdir
-          - convert-to-lote: []
-          - publish-lote:
-              - $tmpdir
-              - xml
-          EOF
+            # Expand with empty signing params — publish steps tolerate unsigned mode
+            OUTPUT_DIR="$tmpdir" LIST_DIR="$dir" \
+              PKCS11_URI="" PKCS11_KEY_LABEL="" PKCS11_CERT_LABEL="" PKCS11_KEY_ID="" \
+              envsubst < "$dir/.pipeline.yaml" > "$pipeline"
+            # Strip empty signing args so publish steps run unsigned
+            sed -i '/^[[:space:]]*- ""$/d' "$pipeline"
+            echo "Pipeline content:"
+            cat "$pipeline"
             if tsl-tool "$pipeline"; then
               echo "✓ $name validated successfully"
               ls -la "$tmpdir"
@@ -90,46 +58,16 @@ jobs:
           done
           exit $failed
 
-      - name: Validate LoTL source directories
-        run: |
-          set -euo pipefail
-          failed=0
-          for dir in lotls/*/; do
-            [ -d "$dir" ] || continue
-            name=$(basename "$dir")
-            if [ ! -f "$dir/lotl.yaml" ]; then
-              echo "::warning::Skipping $name — no lotl.yaml"
-              continue
-            fi
-            echo "::group::Validating LoTL $name"
-            tmpdir=$(mktemp -d)
-            pipeline=$(mktemp --suffix=.yaml)
-            cat > "$pipeline" <<EOF
-          - generate-lotl:
-              - $dir
-          - publish-lote:
-              - $tmpdir
-              - xml
-          EOF
-            if tsl-tool "$pipeline"; then
-              echo "✓ $name validated successfully"
-              ls -la "$tmpdir"
-            else
-              echo "::error::$name failed validation"
-              failed=1
-            fi
-            rm -rf "$tmpdir" "$pipeline"
-            echo "::endgroup::"
-          done
-          exit $failed
-
-      - name: Validate custom pipelines (unsigned)
+      - name: Validate custom pipelines
         run: |
           set -euo pipefail
           for p in pipelines/*.yaml; do
             [ -f "$p" ] || continue
             name=$(basename "$p")
             echo "::group::Validating pipeline $name"
-            tsl-tool "$p"
+            pipeline=$(mktemp --suffix=.yaml)
+            envsubst < "$p" > "$pipeline"
+            tsl-tool "$pipeline"
+            rm -f "$pipeline"
             echo "::endgroup::"
           done

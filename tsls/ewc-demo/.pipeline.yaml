@@ -1,0 +1,16 @@
+- generate:
+    - ${LIST_DIR}
+- publish:
+    - ${OUTPUT_DIR}
+    - ${PKCS11_URI}
+    - ${PKCS11_KEY_LABEL}
+    - ${PKCS11_CERT_LABEL}
+    - ${PKCS11_KEY_ID}
+- convert-to-lote: []
+- publish-lote:
+    - ${OUTPUT_DIR}
+    - ${PKCS11_URI}
+    - ${PKCS11_KEY_LABEL}
+    - ${PKCS11_CERT_LABEL}
+    - ${PKCS11_KEY_ID}
+    - xml
