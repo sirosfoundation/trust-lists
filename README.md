@@ -7,8 +7,8 @@ Lists of Trusted Entities (LoTE) and Trust Status Lists (TSL) for the EUDI walle
 
 ## How it works
 
-1. Trust list source data lives under `lists/` (LoTE), `tsls/` (TSL), and `lotls/` (LoTL) as YAML + certificates
-2. Each directory contains a `.pipeline.yaml` that defines its processing pipeline
+1. Trust list source data lives under `lists/` as YAML + certificates
+2. Each subdirectory contains a `.pipeline.yaml` that defines its processing pipeline
 3. Pull requests add, update, or remove trusted entities — reviewed before merge
 4. On merge to `main`, GitHub Actions runs
    [g119612/tsl-tool](https://github.com/sirosfoundation/g119612) to execute
@@ -19,37 +19,29 @@ Lists of Trusted Entities (LoTE) and Trust Status Lists (TSL) for the EUDI walle
 
 ```
 lists/
-  <instance>/                   # One directory per LoTE trust list
-    .pipeline.yaml              # Pipeline steps for this list
-    scheme.yaml                 # LoTE scheme metadata
-    entities/
-      <entity>/                 # One directory per trusted entity
-        entity.yaml             # Entity metadata
-        cert.pem                # X.509 certificate (optional)
-        key.jwk                 # JWK public key (optional)
-
-tsls/
-  <instance>/                   # One directory per TSL
-    .pipeline.yaml              # Pipeline steps for this list
-    scheme.yaml                 # TSL scheme metadata (ETSI TS 119 612)
-    providers/
-      <provider>/               # One directory per trust service provider
-        provider.yaml           # Provider metadata
-        <service>/              # One directory per trust service
-          cert.pem              # X.509 service certificate
-          cert.yaml             # Service metadata (serviceNames, serviceType, status)
-
-lotls/
-  <instance>/                   # One directory per List of Trusted Lists
-    .pipeline.yaml              # Pipeline steps for this LoTL
-    scheme.yaml                 # LoTL scheme metadata
+  <instance>/                   # One directory per trust list
+    .pipeline.yaml              # Pipeline steps (defines list type)
+    scheme.yaml                 # Scheme metadata
+    entities/                   # LoTE: trusted entities
+      <entity>/
+        entity.yaml
+        cert.pem / key.jwk      # Public key (optional)
+    providers/                  # TSL: trust service providers
+      <provider>/
+        provider.yaml
+        <service>/
+          cert.pem
+          cert.yaml
 
 pipelines/                      # Custom pipelines (e.g. EU LOTL fetch)
-
 static/                         # Assets for the landing page
 templates/                      # HTML templates
 scripts/                        # Build helpers
 ```
+
+The `.pipeline.yaml` determines what type of trust list each directory produces
+(LoTE, TSL, LoTL, or a combination). Not every directory needs `entities/` or
+`providers/` — only the subdirectories relevant to that pipeline.
 
 ## Adding a trusted entity
 
@@ -91,7 +83,7 @@ scripts/                        # Build helpers
 
 ## Creating a TSL instance (ETSI TS 119 612)
 
-1. Create a directory under `tsls/<name>/`
+1. Create a directory under `lists/<name>/`
 2. Add `scheme.yaml`:
    ```yaml
    operatorNames:
@@ -178,7 +170,7 @@ Then configure the repo (the script prints the exact values):
 
 ## Pipeline files
 
-Each `lists/`, `tsls/`, and `lotls/` directory contains a `.pipeline.yaml` that
+Each `lists/<instance>/` directory contains a `.pipeline.yaml` that
 defines the processing steps for that trust list. The workflow reads each file,
 expands `${ENV_VAR}` placeholders with `envsubst`, and passes the result to
 `tsl-tool`.
@@ -198,7 +190,7 @@ Example — a LoTE list (`lists/siros-demo/.pipeline.yaml`):
     - xml
 ```
 
-Example — a TSL with LoTE conversion (`tsls/ewc-demo/.pipeline.yaml`):
+Example — a TSL with LoTE conversion (`lists/ewc-demo/.pipeline.yaml`):
 
 ```yaml
 - generate:
@@ -219,7 +211,7 @@ Example — a TSL with LoTE conversion (`tsls/ewc-demo/.pipeline.yaml`):
     - xml
 ```
 
-Example — a List of Trusted Lists (`lotls/siros-demo/.pipeline.yaml`):
+Example — a List of Trusted Lists (`lists/siros-demo-lotl/.pipeline.yaml`):
 
 ```yaml
 - generate-lotl:
