@@ -8,10 +8,18 @@ set -euo pipefail
 OUTPUT_DIR="${1:?Usage: build-index.sh <output-dir> [domain]}"
 TRUST_DOMAIN="${2:-trust.siros.org}"
 
-# Collect all published LoTE files
-mapfile -t lote_files < <(find "$OUTPUT_DIR" -maxdepth 1 -name 'lote-*.json' -not -name '*.jws' | sort)
+# Collect all published LoTE JSON files (any .json that isn't a LoTL or JWS)
+mapfile -t lote_files < <(find "$OUTPUT_DIR" -maxdepth 1 -name '*.json' \
+  -not -name '*.jws' \
+  -not -name 'list_of_trusted_lists*' \
+  | sort)
 
-# Collect all published TSL XML files
+# Collect all published LoTL JSON files
+mapfile -t lotl_files < <(find "$OUTPUT_DIR" -maxdepth 1 -name 'list_of_trusted_lists*.json' \
+  -not -name '*.jws' \
+  | sort)
+
+# Collect all published TSL XML files (exclude LoTE XML since those are listed with their JSON)
 mapfile -t tsl_files < <(find "$OUTPUT_DIR" -maxdepth 1 -name '*.xml' | sort)
 
 cat > "$OUTPUT_DIR/index.html" <<HEADER
@@ -83,17 +91,22 @@ for f in "${lote_files[@]}"; do
   name=$(basename "$f")
   jws_name="${name}.jws"
   label="${name%.json}"
-  label="${label#lote-}"
 
   signed_col="-"
   if [ -f "$OUTPUT_DIR/$jws_name" ]; then
     signed_col="<a href=\"$jws_name\"><code>$jws_name</code></a>"
   fi
 
+  xml_name="${label}.xml"
+  xml_col=""
+  if [ -f "$OUTPUT_DIR/$xml_name" ]; then
+    xml_col=" &middot; <a href=\"$xml_name\"><code>XML</code></a>"
+  fi
+
   cat >> "$OUTPUT_DIR/index.html" <<ROW
       <tr>
         <td><strong>${label}</strong></td>
-        <td><a href="$name"><code>$name</code></a></td>
+        <td><a href="$name"><code>$name</code></a>${xml_col}</td>
         <td>${signed_col}</td>
       </tr>
 ROW
@@ -104,6 +117,47 @@ cat >> "$OUTPUT_DIR/index.html" <<LOTE_END
   </table>
 
 LOTE_END
+
+# ── LoTL section ──
+if [ ${#lotl_files[@]} -gt 0 ]; then
+  cat >> "$OUTPUT_DIR/index.html" <<LOTL_HEADER
+  <h2>Lists of Trusted Lists (LoTL)</h2>
+  <table>
+    <thead><tr><th>List of Lists</th><th>JSON</th><th>Signed (JWS)</th></tr></thead>
+    <tbody>
+LOTL_HEADER
+
+  for f in "${lotl_files[@]}"; do
+    name=$(basename "$f")
+    jws_name="${name}.jws"
+    label="${name%.json}"
+
+    signed_col="-"
+    if [ -f "$OUTPUT_DIR/$jws_name" ]; then
+      signed_col="<a href=\"$jws_name\"><code>$jws_name</code></a>"
+    fi
+
+    xml_name="${label}.xml"
+    xml_col=""
+    if [ -f "$OUTPUT_DIR/$xml_name" ]; then
+      xml_col=" &middot; <a href=\"$xml_name\"><code>XML</code></a>"
+    fi
+
+    cat >> "$OUTPUT_DIR/index.html" <<ROW
+      <tr>
+        <td><strong>${label}</strong></td>
+        <td><a href="$name"><code>$name</code></a>${xml_col}</td>
+        <td>${signed_col}</td>
+      </tr>
+ROW
+  done
+
+  cat >> "$OUTPUT_DIR/index.html" <<LOTL_END
+    </tbody>
+  </table>
+
+LOTL_END
+fi
 
 # ── TSL section ──
 if [ ${#tsl_files[@]} -gt 0 ]; then
@@ -145,4 +199,4 @@ cat >> "$OUTPUT_DIR/index.html" <<FOOTER
 </html>
 FOOTER
 
-echo "Generated index.html with ${#lote_files[@]} LoTE(s) and ${#tsl_files[@]} TSL(s)"
+echo "Generated index.html with ${#lote_files[@]} LoTE(s), ${#lotl_files[@]} LoTL(s), and ${#tsl_files[@]} TSL(s)"
