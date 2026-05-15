@@ -2,4 +2,3 @@ serviceNames:
   - language: en
     value: "Intesi Group EU Qualified Electronic Signature"
 serviceType: "http://uri.etsi.org/TrstSvc/Svctype/CA/QC"
-status: "https://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted/"
