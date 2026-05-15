@@ -65,18 +65,20 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
     /* ── Footer ── */
     .footer {
       border-top: 1px solid #e0e0e0; margin-top: 3rem;
-      padding: 2rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
-      max-width: 900px; margin-left: auto; margin-right: auto;
-      font-size: 0.875rem; color: #555;
+      padding: 2rem 0; font-size: 0.875rem; color: #555;
+    }
+    .footer-inner {
+      max-width: 900px; margin: 0 auto; padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
     }
     .footer-logo { height: 40px; width: auto; }
-    .footer-links { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; justify-content: flex-end; }
+    .footer-links { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; justify-content: flex-end; }
     .footer-links a { color: #555; text-decoration: none; transition: color 0.2s; }
     .footer-links a:hover { color: #1C4587; }
     .footer-links svg { width: 20px; height: 20px; fill: #555; transition: fill 0.2s; }
     .footer-links a:hover svg { fill: #1C4587; }
     @media (max-width: 640px) {
-      .footer { flex-direction: column; gap: 1rem; text-align: center; }
+      .footer-inner { flex-direction: column; gap: 1rem; text-align: center; }
       .footer-links { justify-content: center; }
     }
   </style>
@@ -210,6 +212,7 @@ cat >> "$OUTPUT_DIR/index.html" <<FOOTER
   </div>
 
   <footer class="footer">
+   <div class="footer-inner">
     <a href="https://siros.org"><img src="static/siros-logo.png" alt="SIROS Foundation" class="footer-logo"></a>
     <div class="footer-links">
       <a href="https://developers.siros.org">Developer Docs</a>
@@ -220,6 +223,7 @@ cat >> "$OUTPUT_DIR/index.html" <<FOOTER
       </a>
       <span>&copy; $(date +%Y) SIROS Foundation</span>
     </div>
+   </div>
   </footer>
 </body>
 </html>
