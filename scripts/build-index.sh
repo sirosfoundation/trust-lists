@@ -41,14 +41,17 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
     }
     .navbar-brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: #1C4587; font-weight: 600; font-size: 1.1rem; }
     .navbar-links { margin-left: auto; display: flex; gap: 1.25rem; align-items: center; }
-    .navbar-links a { color: #444; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+    .navbar-links a { color: #555; text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: color 0.2s; }
     .navbar-links a:hover { color: #1C4587; }
     .navbar-links a.active { color: #1C4587; border-bottom: 2px solid #1C4587; padding-bottom: 2px; }
+    .navbar-links svg { width: 20px; height: 20px; fill: #555; transition: fill 0.2s; }
+    .navbar-links a:hover svg { fill: #1C4587; }
 
     /* ── Main content ── */
     .content { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem; }
-    h1 { color: #1C4587; font-size: 1.6rem; margin-bottom: 0.5rem; }
-    .subtitle { color: #555; margin-bottom: 1.5rem; }
+    h1 { color: #1C4587; font-size: 1.6rem; margin-bottom: 0.5rem; font-weight: 700; }
+    h2 { color: #1C4587; font-size: 1.25rem; font-weight: 600; }
+    .subtitle { color: #555; margin-bottom: 1.5rem; font-size: 0.95rem; }
     table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
     th, td { text-align: left; padding: 0.6rem 1rem; border-bottom: 1px solid #e0e0e0; }
     th { background: #f8f9fa; font-weight: 600; font-size: 0.85rem; color: #555; text-transform: uppercase; letter-spacing: 0.03em; }
@@ -59,9 +62,20 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
     /* ── Footer ── */
     .footer {
       border-top: 1px solid #e0e0e0; margin-top: 3rem;
-      padding: 1.5rem; text-align: center; color: #666; font-size: 0.85rem;
+      padding: 2rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
+      max-width: 900px; margin-left: auto; margin-right: auto;
+      font-size: 0.875rem; color: #555;
     }
-    .footer a { color: #1C4587; }
+    .footer-logo { height: 32px; width: auto; }
+    .footer-links { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; justify-content: flex-end; }
+    .footer-links a { color: #555; text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: #1C4587; }
+    .footer-links svg { width: 20px; height: 20px; fill: #555; transition: fill 0.2s; }
+    .footer-links a:hover svg { fill: #1C4587; }
+    @media (max-width: 640px) {
+      .footer { flex-direction: column; gap: 1rem; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
   </style>
 </head>
 <body>
@@ -71,7 +85,9 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
       <span style="margin-left: 0.5rem;">Trust Lists</span>
     </a>
     <div class="navbar-links">
-      <a href="https://github.com/sirosfoundation/trust-lists">GitHub</a>
+      <a href="https://github.com/sirosfoundation/trust-lists" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 .5C5.73.5.66 5.57.66 11.84c0 5.02 3.25 9.27 7.76 10.77.57.1.78-.25.78-.55 0-.27-.01-1-.02-1.96-3.16.69-3.83-1.52-3.83-1.52-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.69.08-.69 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.69 1.25 3.34.96.1-.74.4-1.25.72-1.54-2.52-.29-5.18-1.26-5.18-5.6 0-1.24.44-2.25 1.17-3.04-.12-.29-.51-1.45.11-3.02 0 0 .96-.31 3.15 1.16.91-.25 1.89-.38 2.86-.38.97 0 1.95.13 2.86.38 2.18-1.47 3.14-1.16 3.14-1.16.62 1.57.23 2.73.11 3.02.73.79 1.17 1.8 1.17 3.04 0 4.35-2.67 5.31-5.21 5.59.41.35.78 1.05.78 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.21.66.79.55 4.5-1.5 7.75-5.75 7.75-10.77C23.34 5.57 18.27.5 12 .5Z"/></svg>
+      </a>
     </div>
   </nav>
 
@@ -189,10 +205,15 @@ cat >> "$OUTPUT_DIR/index.html" <<FOOTER
   </div>
 
   <footer class="footer">
-    Copyright &copy; $(date +%Y) SIROS Foundation &middot;
-    Built $(date -u +"%Y-%m-%d %H:%M UTC") &middot;
-    <a href="https://github.com/sirosfoundation/trust-lists">Source</a> &middot;
-    <a href="https://github.com/sirosfoundation/g119612">g119612/tsl-tool</a>
+    <a href="/"><img src="static/siros-logo.png" alt="SIROS Foundation" class="footer-logo"></a>
+    <div class="footer-links">
+      <a href="https://github.com/sirosfoundation/trust-lists">Source</a>
+      <a href="https://github.com/sirosfoundation/g119612">g119612/tsl-tool</a>
+      <a href="https://github.com/sirosfoundation" aria-label="SIROS Foundation on GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 .5C5.73.5.66 5.57.66 11.84c0 5.02 3.25 9.27 7.76 10.77.57.1.78-.25.78-.55 0-.27-.01-1-.02-1.96-3.16.69-3.83-1.52-3.83-1.52-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.69.08-.69 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.69 1.25 3.34.96.1-.74.4-1.25.72-1.54-2.52-.29-5.18-1.26-5.18-5.6 0-1.24.44-2.25 1.17-3.04-.12-.29-.51-1.45.11-3.02 0 0 .96-.31 3.15 1.16.91-.25 1.89-.38 2.86-.38.97 0 1.95.13 2.86.38 2.18-1.47 3.14-1.16 3.14-1.16.62 1.57.23 2.73.11 3.02.73.79 1.17 1.8 1.17 3.04 0 4.35-2.67 5.31-5.21 5.59.41.35.78 1.05.78 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.21.66.79.55 4.5-1.5 7.75-5.75 7.75-10.77C23.34 5.57 18.27.5 12 .5Z"/></svg>
+      </a>
+      <span>&copy; $(date +%Y) SIROS Foundation</span>
+    </div>
   </footer>
 </body>
 </html>
