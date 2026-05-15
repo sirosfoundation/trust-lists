@@ -69,7 +69,7 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
       max-width: 900px; margin-left: auto; margin-right: auto;
       font-size: 0.875rem; color: #555;
     }
-    .footer-logo { height: 32px; width: auto; }
+    .footer-logo { height: 40px; width: auto; }
     .footer-links { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; justify-content: flex-end; }
     .footer-links a { color: #555; text-decoration: none; transition: color 0.2s; }
     .footer-links a:hover { color: #1C4587; }
@@ -85,7 +85,7 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
   <nav class="navbar">
     <div class="navbar-inner">
     <a href="/" class="navbar-brand">
-      <img src="static/siros-logo.png" alt="SIROS Foundation" style="height: 32px; width: auto;">
+      <img src="static/siros-logo.png" alt="SIROS Foundation" style="height: 40px; width: auto;">
       <span style="margin-left: 0.5rem;">Trust Lists</span>
     </a>
     <div class="navbar-links">
