@@ -83,6 +83,8 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
     .footer-nav a:hover { color: #1C4587; text-decoration: none; }
     .footer-nav svg { width: 20px; height: 20px; fill: #555; transition: fill 0.2s; }
     .footer-nav a:hover svg { fill: #1C4587; }
+    .build-info { font-size: 0.75rem; color: #888; margin-top: 1rem; }
+    .build-info a { color: inherit; }
     @media (max-width: 640px) {
       .footer-inner { flex-direction: column; gap: 1.5rem; }
       .footer-nav { justify-content: flex-start; }
@@ -233,6 +235,7 @@ cat >> "$OUTPUT_DIR/index.html" <<FOOTER
       </a>
     </nav>
    </div>
+   <div class="footer-inner"><p class="build-info">Generated $(date -u +%Y-%m-%dT%H:%M:%SZ) using <a href="https://github.com/sirosfoundation/g119612">g119612</a></p></div>
   </footer>
 </body>
 </html>
