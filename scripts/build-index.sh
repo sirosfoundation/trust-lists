@@ -39,8 +39,8 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
       position: sticky; top: 0; z-index: 100;
     }
     .navbar-inner {
-      max-width: 1140px; margin: 0 auto;
-      padding: 0.6rem 1.5rem; display: flex; align-items: center;
+      max-width: 1400px; margin: 0 auto;
+      padding: 0.6rem 2rem; display: flex; align-items: center;
     }
     .navbar-brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: #1C4587; font-weight: 600; font-size: 1.1rem; }
     .navbar-links { margin-left: auto; display: flex; gap: 1.25rem; align-items: center; }
@@ -51,7 +51,7 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
     .navbar-links a:hover svg { fill: #1C4587; }
 
     /* ── Main content ── */
-    .content { max-width: 1140px; margin: 2rem auto; padding: 0 1.5rem; }
+    .content { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
     h1 { color: #1C4587; font-size: 1.6rem; margin-bottom: 0.5rem; font-weight: 700; }
     h2 { color: #1C4587; font-size: 1.25rem; font-weight: 600; }
     .subtitle { color: #555; margin-bottom: 1.5rem; font-size: 0.95rem; }
@@ -68,7 +68,7 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
       padding: 2.5rem 0; font-size: 0.875rem; color: #555;
     }
     .footer-inner {
-      max-width: 1140px; margin: 0 auto; padding: 0 1.5rem;
+      max-width: 1400px; margin: 0 auto; padding: 0 2rem;
       display: flex; align-items: flex-start; justify-content: space-between; gap: 2rem;
     }
     .footer-address { display: flex; flex-direction: column; gap: 0.25rem; }
