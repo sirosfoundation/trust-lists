@@ -39,7 +39,7 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
       position: sticky; top: 0; z-index: 100;
     }
     .navbar-inner {
-      max-width: 900px; margin: 0 auto;
+      margin: 0 auto;
       padding: 0.6rem 1.5rem; display: flex; align-items: center;
     }
     .navbar-brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: #1C4587; font-weight: 600; font-size: 1.1rem; }
@@ -68,7 +68,7 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
       padding: 2.5rem 0; font-size: 0.875rem; color: #555;
     }
     .footer-inner {
-      max-width: 900px; margin: 0 auto; padding: 0 1.5rem;
+      margin: 0 auto; padding: 0 1.5rem;
       display: flex; align-items: flex-start; justify-content: space-between; gap: 2rem;
     }
     .footer-address { display: flex; flex-direction: column; gap: 0.25rem; }
