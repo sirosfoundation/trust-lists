@@ -76,6 +76,8 @@ cat > "$OUTPUT_DIR/index.html" <<HEADER
     .footer-address a:hover { color: #1C4587; text-decoration: none; }
     .footer-address address { font-style: normal; }
     .footer-org { font-weight: 600; color: #1a1a1a; margin: 0; }
+    .footer-org a { color: inherit; text-decoration: none; }
+    .footer-org a:hover { color: #1C4587; }
     .footer-nav { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; padding-top: 0.5rem; }
     .footer-nav a { color: #555; text-decoration: none; transition: color 0.2s; }
     .footer-nav a:hover { color: #1C4587; text-decoration: none; }
@@ -218,7 +220,7 @@ cat >> "$OUTPUT_DIR/index.html" <<FOOTER
   <footer class="footer">
    <div class="footer-inner">
     <div class="footer-address">
-      <p class="footer-org">SIROS Foundation</p>
+      <p class="footer-org"><a href="https://siros.org">SIROS Foundation</a></p>
       <a href="mailto:info@siros.org">info@siros.org</a>
       <address>Bredgränd 4<br>111 30 Stockholm<br>Sweden</address>
     </div>
