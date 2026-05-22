@@ -1,4 +1,5 @@
 dist/
 *.pem
+!certs/root-signer.pem
 *.key
 softhsm2.conf
