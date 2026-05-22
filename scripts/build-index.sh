@@ -216,6 +216,30 @@ ROW
 TSL_END
 fi
 
+# ── Trust Anchor section ──
+if [ -f "$OUTPUT_DIR/root-signer.pem" ]; then
+  FINGERPRINT=$(openssl x509 -in "$OUTPUT_DIR/root-signer.pem" -noout -fingerprint -sha256 2>/dev/null \
+    | sed 's/sha256 Fingerprint=//;s/SHA256 Fingerprint=//')
+  NOT_AFTER=$(openssl x509 -in "$OUTPUT_DIR/root-signer.pem" -noout -enddate 2>/dev/null \
+    | sed 's/notAfter=//')
+
+  cat >> "$OUTPUT_DIR/index.html" <<ANCHOR
+  <h2>Trust Anchor</h2>
+  <p>All trust lists published on this site are signed with the root certificate below.
+     Download it to verify signatures on LoTE (JWS) and TSL (XML-DSIG) artifacts.</p>
+  <table>
+    <thead><tr><th>Certificate</th><th>SHA-256 Fingerprint</th><th>Valid Until</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="root-signer.pem" download><code>root-signer.pem</code></a></td>
+        <td><code style="font-size: 0.8em; word-break: break-all;">${FINGERPRINT}</code></td>
+        <td>${NOT_AFTER}</td>
+      </tr>
+    </tbody>
+  </table>
+ANCHOR
+fi
+
 cat >> "$OUTPUT_DIR/index.html" <<FOOTER
   </div>
 

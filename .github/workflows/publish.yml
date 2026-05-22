@@ -54,8 +54,11 @@ jobs:
           echo "signing_mode=$MODE" >> "$GITHUB_OUTPUT"
           echo "Signing mode: $MODE"
 
-      # ── dev: ephemeral SoftHSM2 on GitHub-hosted runner ───────────
-      - name: Setup ephemeral SoftHSM2 (dev)
+      # ── dev: SoftHSM2 on GitHub-hosted runner ──────────────────────
+      # If SIGNING_KEY_PEM secret is set, imports the stable root key
+      # from the secret and the matching cert from certs/root-signer.pem.
+      # Otherwise falls back to generating an ephemeral key pair.
+      - name: Setup SoftHSM2 (dev)
         if: steps.mode.outputs.signing_mode == 'dev'
         run: |
           set -euo pipefail
@@ -79,30 +82,52 @@ jobs:
             if [ -f "$p" ]; then PKCS11_MODULE="$p"; break; fi
           done
 
-          pkcs11-tool --module "$PKCS11_MODULE" \
-            --token-label "trust-lists" \
-            --login --pin 1234 \
-            --keypairgen --key-type ec:prime256v1 \
-            --id 01 --label "signing-key"
+          if [ -n "${SIGNING_KEY_PEM:-}" ] && [ -f certs/root-signer.pem ]; then
+            echo "Importing stable root signing key from secret"
+            KEY_FILE=$(mktemp)
+            trap 'rm -f "$KEY_FILE"' EXIT
+            printf '%s\n' "$SIGNING_KEY_PEM" > "$KEY_FILE"
 
-          openssl req -new -x509 -nodes \
-            -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 \
-            -keyout "$TOKEN_DIR/temp-key.pem" \
-            -out "$TOKEN_DIR/cert.pem" \
-            -days 365 \
-            -subj "/CN=${TRUST_DOMAIN} Trust List Signer (Dev)"
+            softhsm2-util --import "$KEY_FILE" \
+              --token "trust-lists" \
+              --pin 1234 \
+              --label "signing-key" \
+              --id 01
 
-          pkcs11-tool --module "$PKCS11_MODULE" \
-            --token-label "trust-lists" \
-            --login --pin 1234 \
-            --write-object "$TOKEN_DIR/cert.pem" --type cert \
-            --id 01 --label "signing-cert"
+            pkcs11-tool --module "$PKCS11_MODULE" \
+              --token-label "trust-lists" \
+              --login --pin 1234 \
+              --write-object certs/root-signer.pem --type cert \
+              --id 01 --label "signing-cert"
+          else
+            echo "No SIGNING_KEY_PEM secret — generating ephemeral key pair"
+            pkcs11-tool --module "$PKCS11_MODULE" \
+              --token-label "trust-lists" \
+              --login --pin 1234 \
+              --keypairgen --key-type ec:prime256v1 \
+              --id 01 --label "signing-key"
+
+            openssl req -new -x509 -nodes \
+              -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 \
+              -keyout "$TOKEN_DIR/temp-key.pem" \
+              -out "$TOKEN_DIR/cert.pem" \
+              -days 365 \
+              -subj "/CN=${TRUST_DOMAIN} Trust List Signer (Dev)"
+
+            pkcs11-tool --module "$PKCS11_MODULE" \
+              --token-label "trust-lists" \
+              --login --pin 1234 \
+              --write-object "$TOKEN_DIR/cert.pem" --type cert \
+              --id 01 --label "signing-cert"
+          fi
 
           echo "PKCS11_URI=pkcs11:module=${PKCS11_MODULE};pin=1234;token=trust-lists" >> "$GITHUB_ENV"
           echo "PKCS11_KEY_LABEL=signing-key" >> "$GITHUB_ENV"
           echo "PKCS11_CERT_LABEL=signing-cert" >> "$GITHUB_ENV"
           echo "PKCS11_KEY_ID=01" >> "$GITHUB_ENV"
           echo "SOFTHSM2_CONF=$TOKEN_DIR/softhsm2.conf" >> "$GITHUB_ENV"
+        env:
+          SIGNING_KEY_PEM: ${{ secrets.SIGNING_KEY_PEM }}
 
       # ── softhsm: persistent SoftHSM2 on self-hosted runner ────────
       - name: Configure persistent SoftHSM2
@@ -218,6 +243,11 @@ jobs:
           # Copy static assets
           if [ -d static ]; then
             cp -r static "$OUTPUT_DIR/static"
+          fi
+
+          # Publish root signing certificate for out-of-band trust anchor discovery
+          if [ -f certs/root-signer.pem ]; then
+            cp certs/root-signer.pem "$OUTPUT_DIR/root-signer.pem"
           fi
 
           # Write CNAME from configured domain
