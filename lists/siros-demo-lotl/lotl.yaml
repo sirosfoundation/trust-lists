@@ -12,6 +12,8 @@ territory: "demo"
 
 sequenceNumber: 1
 
+validityDays: 180
+
 pointers:
   - location: "https://trust.siros.org/lote-demo.json"
     schemeTerritory: "demo"

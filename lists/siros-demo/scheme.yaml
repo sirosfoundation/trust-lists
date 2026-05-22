@@ -11,3 +11,5 @@ schemeType: "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric"
 territory: "demo"
 
 sequenceNumber: 1
+
+validityDays: 180
