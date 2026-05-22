@@ -1,7 +1,8 @@
 operatorNames:
   - language: en
     value: "EWC Consortium"
-type: "https://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric/"
+type: "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric"
+territory: "EU"
 sequenceNumber: 1
 distributionPoints:
   - "https://trust.siros.org/ewc-demo.xml"
