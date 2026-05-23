@@ -60,3 +60,8 @@ cat > "$OUTPUT_DIR/status.json" <<EOF
 EOF
 
 echo "Generated status.json: status=$STATUS, ${#entries[@]} list(s)"
+
+# Ping heartbeat monitor if configured and status is ok
+if [ "$STATUS" = "ok" ] && [ -n "${HEARTBEAT_URL:-}" ]; then
+  curl -fsS --max-time 10 "$HEARTBEAT_URL" >/dev/null 2>&1 || echo "Warning: heartbeat ping failed"
+fi

@@ -261,6 +261,8 @@ jobs:
 
           # Generate status.json for external monitoring (e.g. instatus.com)
           bash scripts/build-status.sh "$OUTPUT_DIR"
+        env:
+          HEARTBEAT_URL: ${{ secrets.HEARTBEAT_URL }}
 
       - uses: actions/upload-pages-artifact@v3
         with:
