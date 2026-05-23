@@ -52,6 +52,7 @@ jobs:
         run: |
           MODE="${{ inputs.signing_mode || vars.DEFAULT_SIGNING_MODE || 'dev' }}"
           echo "signing_mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "SIGNING_MODE=$MODE" >> "$GITHUB_ENV"
           echo "Signing mode: $MODE"
 
       # ── dev: SoftHSM2 on GitHub-hosted runner ──────────────────────
@@ -257,6 +258,9 @@ jobs:
           if [ -f scripts/build-index.sh ]; then
             bash scripts/build-index.sh "$OUTPUT_DIR" "$TRUST_DOMAIN"
           fi
+
+          # Generate status.json for external monitoring (e.g. instatus.com)
+          bash scripts/build-status.sh "$OUTPUT_DIR"
 
       - uses: actions/upload-pages-artifact@v3
         with:
