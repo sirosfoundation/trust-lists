@@ -1,0 +1,11 @@
+operatorNames:
+  - language: en
+    value: "SIROS Foundation"
+
+schemeName:
+  - language: en
+    value: "multipaz.org - Trust Scheme"
+
+schemeType: "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric"
+territory: "SE"
+sequenceNumber: 1
