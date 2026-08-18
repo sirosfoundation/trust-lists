@@ -1,0 +1,15 @@
+entityId: https://verifier.multipaz.org
+
+names:
+  - language: en
+    value: "multipaz.org - Verifier"
+
+status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"  # Defaults to "granted" if omitted
+
+address:
+  electronic:
+    - "mailto:multipaz-discuss@googlegroups.com"
+
+informationURI:
+  - language: en
+    value: "https://verifier.multipaz.org"

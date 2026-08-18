@@ -1,0 +1,19 @@
+entityId: https://siros-multipaz-verifier.fly.dev
+
+names:
+  - language: en
+    value: "siros-multipaz-verifier (SIROS-hosted multipaz-ppid) - Verifier"
+
+status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"  # Defaults to "granted" if omitted
+
+address:
+  postal:
+    streetAddress: "c/o SIROS Foundation"
+    locality: "Stockholm"
+    countryName: "SE"
+  electronic:
+    - "mailto:info@siros.org"
+
+informationURI:
+  - language: en
+    value: "https://siros-multipaz-verifier.fly.dev"
