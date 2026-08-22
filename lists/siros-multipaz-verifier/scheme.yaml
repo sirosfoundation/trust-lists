@@ -9,3 +9,6 @@ schemeName:
 schemeType: "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric"
 territory: "SE"
 sequenceNumber: 1
+
+distributionPoints:
+  - "https://trust.siros.org/siros-multipaz-verifier.xml"
