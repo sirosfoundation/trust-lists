@@ -40,8 +40,10 @@ jobs:
             OUTPUT_DIR="$tmpdir" LIST_DIR="$dir" \
               PKCS11_URI="" PKCS11_KEY_LABEL="" PKCS11_CERT_LABEL="" PKCS11_KEY_ID="" \
               envsubst < "$dir/.pipeline.yaml" > "$pipeline"
-            # Strip empty signing args so publish steps run unsigned
-            sed -i '/^[[:space:]]*- ""$/d' "$pipeline"
+            # Strip empty signing args so publish steps run unsigned.
+            # envsubst leaves a bare "- " for an unset variable, not '- ""',
+            # so match any list item with no value after the dash.
+            sed -i -E '/^[[:space:]]*-[[:space:]]*("")?[[:space:]]*$/d' "$pipeline"
             echo "Pipeline content:"
             cat "$pipeline"
             if tsl-tool "$pipeline"; then
