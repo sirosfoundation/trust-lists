@@ -9,6 +9,9 @@ on:
       - 'templates/**'
       - 'static/**'
       - 'scripts/**'
+      # The published trust anchor. Changing it without republishing leaves
+      # the site serving lists signed under the previous certificate.
+      - 'certs/**'
   workflow_dispatch:
     inputs:
       signing_mode:
