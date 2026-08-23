@@ -174,10 +174,16 @@ jobs:
           fi
           echo "New certificate matches the signing key."
 
+      # Copy into the workspace first: uploading from an absolute path outside
+      # it makes the artifact carry that path, and `gh run download` then
+      # refuses it as path traversal.
+      - name: Stage certificate for upload
+        run: cp "$WORK/root-signer.pem" root-signer.pem
+
       - uses: actions/upload-artifact@v7
         with:
           name: root-signer-pem
-          path: ${{ env.WORK }}/root-signer.pem
+          path: root-signer.pem
           if-no-files-found: error
 
       - name: Next steps
