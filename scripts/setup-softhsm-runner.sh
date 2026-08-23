@@ -121,33 +121,42 @@ pkcs11-tool --module "$PKCS11_MODULE" \
   --label "$KEY_LABEL"
 
 # ── Generate and import certificate ─────────────────────────────────
-echo "Generating self-signed certificate..."
+#
+# The certificate MUST be issued for the key that was just created in the
+# token. Do not reach for "openssl req -x509 -newkey ...": that generates
+# its own key pair, so the certificate ends up describing a key the token
+# does not hold. Signing then succeeds and produces signatures that nobody
+# can verify, with no error at signing time.
+#
+# tsl-tool -selfsign-cert takes the public key from the token and has the
+# token sign, so the two cannot disagree.
+echo "Issuing self-signed certificate for the token's key..."
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
-# Determine openssl key args from KEY_TYPE
-case "$KEY_TYPE" in
-  ec:prime256v1) OPENSSL_KEY_ARGS="-newkey ec -pkeyopt ec_paramgen_curve:prime256v1" ;;
-  ec:secp384r1)  OPENSSL_KEY_ARGS="-newkey ec -pkeyopt ec_paramgen_curve:secp384r1" ;;
-  ec:secp521r1)  OPENSSL_KEY_ARGS="-newkey ec -pkeyopt ec_paramgen_curve:secp521r1" ;;
-  rsa:*)         BITS="${KEY_TYPE#rsa:}"; OPENSSL_KEY_ARGS="-newkey rsa:$BITS" ;;
-  *)             echo "Unsupported key type for cert generation: $KEY_TYPE" >&2; exit 1 ;;
-esac
+if ! command -v tsl-tool &>/dev/null; then
+  echo "tsl-tool not found in PATH — required to issue the certificate." >&2
+  echo "Install it from https://github.com/sirosfoundation/g119612/releases" >&2
+  exit 1
+fi
 
-# shellcheck disable=SC2086
-openssl req -new -x509 -nodes \
-  $OPENSSL_KEY_ARGS \
-  -keyout "$TMPDIR/temp-key.pem" \
-  -out "$TMPDIR/cert.pem" \
+# CERT_SUBJECT is an openssl-style /CN=... string; tsl-tool takes the CN.
+CERT_CN="${CERT_SUBJECT#/CN=}"
+
+tsl-tool -selfsign-cert \
+  -pkcs11-uri "pkcs11:module=${PKCS11_MODULE};pin=${USER_PIN};token=${TOKEN_LABEL}" \
+  -key-label "$KEY_LABEL" \
+  -key-id "$KEY_ID" \
+  -cert-label "$CERT_LABEL" \
+  -subject "$CERT_CN" \
   -days "$CERT_DAYS" \
-  -subj "$CERT_SUBJECT"
+  -output "$TMPDIR/root-signer.pem"
 
-pkcs11-tool --module "$PKCS11_MODULE" \
-  --token-label "$TOKEN_LABEL" \
-  --login --pin "$USER_PIN" \
-  --write-object "$TMPDIR/cert.pem" --type cert \
-  --id "$KEY_ID" \
-  --label "$CERT_LABEL"
+echo ""
+echo "Certificate issued. Commit this as certs/root-signer.pem so the"
+echo "published trust anchor matches what the token signs with:"
+echo ""
+cat "$TMPDIR/root-signer.pem"
 
 # ── Verify ──────────────────────────────────────────────────────────
 echo ""

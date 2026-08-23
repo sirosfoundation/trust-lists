@@ -108,18 +108,22 @@ jobs:
               --keypairgen --key-type ec:prime256v1 \
               --id 01 --label "signing-key"
 
-            openssl req -new -x509 -nodes \
-              -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 \
-              -keyout "$TOKEN_DIR/temp-key.pem" \
-              -out "$TOKEN_DIR/cert.pem" \
+            # Issue the certificate for the key just generated in the token.
+            # "openssl req -x509 -newkey" would generate its own key pair, so
+            # the certificate would describe a key the token does not hold and
+            # every signature would be unverifiable — silently.
+            tsl-tool -selfsign-cert \
+              -pkcs11-uri "pkcs11:module=${PKCS11_MODULE};pin=1234;token=trust-lists" \
+              -key-label "signing-key" \
+              -key-id 01 \
+              -cert-label "signing-cert" \
+              -subject "${TRUST_DOMAIN} Trust List Signer (Dev)" \
               -days 365 \
-              -subj "/CN=${TRUST_DOMAIN} Trust List Signer (Dev)"
+              -output "$TOKEN_DIR/cert.pem"
 
-            pkcs11-tool --module "$PKCS11_MODULE" \
-              --token-label "trust-lists" \
-              --login --pin 1234 \
-              --write-object "$TOKEN_DIR/cert.pem" --type cert \
-              --id 01 --label "signing-cert"
+            # In this mode the ephemeral certificate is the trust anchor, so
+            # publish it rather than the committed one.
+            echo "EPHEMERAL_ROOT_SIGNER=$TOKEN_DIR/cert.pem" >> "$GITHUB_ENV"
           fi
 
           echo "PKCS11_URI=pkcs11:module=${PKCS11_MODULE};pin=1234;token=trust-lists" >> "$GITHUB_ENV"
@@ -194,6 +198,53 @@ jobs:
           echo "Cert label: $PKCS11_CERT_LABEL (ID: $PKCS11_KEY_ID)"
           pkcs11-tool --module "$MODULE" --token-label "$TOKEN" --list-objects 2>&1 || true
 
+      # ── Guard: the certificate must belong to the signing key ────
+      # If these disagree, signing still succeeds and every published list
+      # is unverifiable by anyone holding the certificate. That shipped
+      # undetected for months, so fail the build here instead.
+      - name: Verify signing certificate matches signing key
+        run: |
+          set -euo pipefail
+          MODULE=$(echo "$PKCS11_URI" | sed -n 's/.*module=\([^;]*\).*/\1/p')
+          TOKEN=$(echo "$PKCS11_URI" | sed -n 's/.*token=\([^;]*\).*/\1/p')
+          PIN=$(echo "$PKCS11_URI" | sed -n 's/.*pin=\([^;]*\).*/\1/p')
+
+          WORK=$(mktemp -d)
+          trap 'rm -rf "$WORK"' EXIT
+
+          pkcs11-tool --module "$MODULE" --token-label "$TOKEN" --login --pin "$PIN" \
+            --read-object --type pubkey --label "$PKCS11_KEY_LABEL" -o "$WORK/key.der"
+          pkcs11-tool --module "$MODULE" --token-label "$TOKEN" --login --pin "$PIN" \
+            --read-object --type cert --label "$PKCS11_CERT_LABEL" -o "$WORK/cert.der"
+
+          openssl pkey -pubin -inform DER -in "$WORK/key.der" -outform DER -pubout > "$WORK/from-key.der"
+          openssl x509 -inform DER -in "$WORK/cert.der" -pubkey -noout \
+            | openssl pkey -pubin -outform DER -pubout > "$WORK/from-cert.der"
+
+          if ! cmp -s "$WORK/from-key.der" "$WORK/from-cert.der"; then
+            echo "::error::Certificate '$PKCS11_CERT_LABEL' does not belong to key '$PKCS11_KEY_LABEL'."
+            echo "::error::Signatures would verify against nothing. Reissue with:"
+            echo "::error::  tsl-tool -selfsign-cert -pkcs11-uri ... -cert-label $PKCS11_CERT_LABEL -subject '...' -output certs/root-signer.pem"
+            exit 1
+          fi
+          echo "Signing certificate matches the signing key."
+
+          # The published trust anchor must be that same certificate.
+          ANCHOR=""
+          if [ -n "${EPHEMERAL_ROOT_SIGNER:-}" ] && [ -f "$EPHEMERAL_ROOT_SIGNER" ]; then
+            ANCHOR="$EPHEMERAL_ROOT_SIGNER"
+          elif [ -f certs/root-signer.pem ]; then
+            ANCHOR=certs/root-signer.pem
+          fi
+          if [ -n "$ANCHOR" ]; then
+            openssl x509 -in "$ANCHOR" -outform DER > "$WORK/anchor.der"
+            if ! cmp -s "$WORK/anchor.der" "$WORK/cert.der"; then
+              echo "::error::Published trust anchor ($ANCHOR) is not the certificate in the token."
+              exit 1
+            fi
+            echo "Published trust anchor matches the token certificate."
+          fi
+
       # ── Run all .pipeline.yaml files ────────────────────────────
       - name: Run trust list pipelines
         run: |
@@ -246,8 +297,12 @@ jobs:
             cp -r static "$OUTPUT_DIR/static"
           fi
 
-          # Publish root signing certificate for out-of-band trust anchor discovery
-          if [ -f certs/root-signer.pem ]; then
+          # Publish root signing certificate for out-of-band trust anchor
+          # discovery. This must be the certificate the token actually signs
+          # with, otherwise the published lists verify against nothing.
+          if [ -n "${EPHEMERAL_ROOT_SIGNER:-}" ] && [ -f "$EPHEMERAL_ROOT_SIGNER" ]; then
+            cp "$EPHEMERAL_ROOT_SIGNER" "$OUTPUT_DIR/root-signer.pem"
+          elif [ -f certs/root-signer.pem ]; then
             cp certs/root-signer.pem "$OUTPUT_DIR/root-signer.pem"
           fi
 
