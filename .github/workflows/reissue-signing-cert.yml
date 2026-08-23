@@ -47,7 +47,9 @@ env:
 
 jobs:
   reissue:
-    runs-on: self-hosted
+    # Must be the Linux signer, not the org's macOS Xcode builder — both
+    # carry the bare 'self-hosted' label.
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - uses: actions/checkout@v7
 

@@ -40,7 +40,9 @@ env:
 jobs:
   build:
     # dev = ephemeral SoftHSM on GitHub-hosted runner; softhsm/yubihsm = self-hosted runner
-    runs-on: ${{ (inputs.signing_mode == 'dev' || (!inputs.signing_mode && vars.DEFAULT_SIGNING_MODE == 'dev')) && 'ubuntu-latest' || 'self-hosted' }}
+    # 'self-hosted' alone also matches the org's macOS Xcode builder, which
+    # has no signing token. Pin to the Linux signer explicitly.
+    runs-on: ${{ fromJSON((inputs.signing_mode == 'dev' || (!inputs.signing_mode && vars.DEFAULT_SIGNING_MODE == 'dev')) && '"ubuntu-latest"' || '["self-hosted","Linux","X64"]') }}
     steps:
       - uses: actions/checkout@v7
 
