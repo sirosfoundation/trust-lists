@@ -1,0 +1,27 @@
+entityId: "https://de-eudi-wallet.issuer.id.siros.org"
+
+names:
+  - language: en
+    value: "SIROS Demo DE-EUDI Wallet Issuer"
+
+
+status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"
+
+address:
+  postal:
+    streetAddress: "c/o SIROS Foundation"
+    locality: "Stockholm"
+    countryName: "SE"
+  electronic:
+    - "mailto:info@siros.org"
+
+informationURI:
+  - language: en
+    value: "https://siros.org"
+
+services:
+  - serviceNames:
+      - language: en
+        value: "Issuer"
+    serviceType: "http://uri.etsi.org/TrstSvc/Svctype/CA/QC"
+    status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"
