@@ -4,15 +4,15 @@ operatorNames:
 
 schemeName:
   - language: en
-    value: "SIROS Demo Trust List"
+    value: "SIROS Test Trust List"
 
 schemeType: "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric"
 
-territory: "demo"
+territory: "test"
 
 sequenceNumber: 1
 
 validityDays: 180
 
 distributionPoints:
-  - "https://trust.siros.org/siros-demo.xml"
+  - "https://trust.siros.org/siros-test.xml"

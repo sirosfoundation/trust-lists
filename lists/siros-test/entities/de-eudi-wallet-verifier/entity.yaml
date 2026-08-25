@@ -1,0 +1,27 @@
+entityId: "https://de-eudi-wallet.verifier.id.siros.org"
+
+names:
+  - language: en
+    value: "SIROS Demo DE-EUDI Wallet Verifier"
+
+
+status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"
+
+address:
+  postal:
+    streetAddress: "c/o SIROS Foundation"
+    locality: "Stockholm"
+    countryName: "SE"
+  electronic:
+    - "mailto:info@siros.org"
+
+informationURI:
+  - language: en
+    value: "https://siros.org"
+
+services:
+  - serviceNames:
+      - language: en
+        value: "Verifier"
+    serviceType: "http://uri.etsi.org/TrstSvc/Svctype/QESValidation/Q/"
+    status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"
