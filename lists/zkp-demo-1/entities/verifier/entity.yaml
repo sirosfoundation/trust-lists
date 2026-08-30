@@ -1,0 +1,15 @@
+entityId: https:///zkp-demo-verifier.fly.dev
+
+names:
+  - language: en
+    value: "zkp-demo-1 - Verifier"
+
+status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"  # Defaults to "granted" if omitted
+
+address:
+  electronic:
+    - "mailto:spam@siros.org"
+
+informationURI:
+  - language: en
+    value: "https:///zkp-demo-verifier.fly.dev"
