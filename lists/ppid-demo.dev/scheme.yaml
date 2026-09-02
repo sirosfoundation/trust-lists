@@ -1,0 +1,14 @@
+operatorNames:
+  - language: en
+    value: "SIROS Foundation"
+
+schemeName:
+  - language: en
+    value: "ppid-demo.dev - Trust Scheme"
+
+schemeType: "http://uri.etsi.org/TrstSvc/TrustedList/TSLType/EUgeneric"
+territory: "SE"
+sequenceNumber: 1
+
+distributionPoints:
+  - "https://trust.siros.org/ppid-demo.dev.xml"
