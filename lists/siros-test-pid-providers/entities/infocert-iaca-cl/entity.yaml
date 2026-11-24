@@ -1,0 +1,27 @@
+entityId: "https://www.infocert.it"
+
+names:
+  - language: en
+    value: "InfoCert S.p.A."
+
+status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"
+
+address:
+  postal:
+    streetAddress: "Piazza Sallustio 9"
+    locality: "Roma"
+    postalCode: "00187"
+    countryName: "IT"
+  electronic:
+    - "https://www.infocert.it"
+
+informationURI:
+  - language: en
+    value: "https://www.infocert.it"
+
+services:
+  - serviceNames:
+      - language: en
+        value: "InfoCert IACA Collaudo CL"
+    serviceType: "http://uri.etsi.org/19602/SvcType/PID/Issuance"
+    status: "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted"
