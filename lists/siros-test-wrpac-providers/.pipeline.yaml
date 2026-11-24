@@ -1,0 +1,10 @@
+- generate-lote:
+    - ${LIST_DIR}
+- increment-lote-sequence: []
+- publish-lote:
+    - ${OUTPUT_DIR}
+    - ${PKCS11_URI}
+    - ${PKCS11_KEY_LABEL}
+    - ${PKCS11_CERT_LABEL}
+    - ${PKCS11_KEY_ID}
+    - xml
